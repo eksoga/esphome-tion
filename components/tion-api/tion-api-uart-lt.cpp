@@ -331,12 +331,14 @@ bool TionLtUartProtocol::write_frame(uint16_t type, const void *data, size_t siz
         this->write_cmd_(set.heater_state ? CMD_SET_HEATER_ON : CMD_SET_HEATER_OFF);
       }
       if (this->t_data.sound_state != set.sound_state) {
-        // команду можем выполнить, но состояние прочитать не можем
         this->write_cmd_(set.sound_state ? CMD_SET_SOUND_STATE_ON : CMD_SET_SOUND_STATE_OFF);
+        // команду можем выполнить, но состояние прочитать не можем. сохраним его самостоятельно
+        this->t_data.sound_state = set.sound_state;
       }
       if (this->t_data.led_state != set.led_state) {
-        // команду можем выполнить, но состояние прочитать не можем
         this->write_cmd_(set.led_state ? CMD_SET_LED_STATE_ON : CMD_SET_LED_STATE_OFF);
+        // команду можем выполнить, но состояние прочитать не можем. сохраним его самостоятельно
+        this->t_data.led_state = set.led_state;
       }
       if (this->t_data.power_state != set.power_state) {
         this->write_cmd_(set.power_state ? CMD_POWER_ON : CMD_POWER_OFF);
