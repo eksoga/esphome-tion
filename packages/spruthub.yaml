@@ -10,3 +10,7 @@ esphome:
 mqtt:
   discovery: false
   publish_nan_as_none: false
+
+setup:
+  - lambda: |-
+      id(tion_climate).set_name("")
