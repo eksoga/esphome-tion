@@ -8,6 +8,9 @@ esp32:
   flash_size: 16MB
 
 logger:
+  # перенаправим лог на QWIIC-коннектор. подключение: GND ближе к USB-порту, TX через один.
+  baud_rate: 115200
+  hardware_uart: UART0
   logs:
     light: INFO
     spi_led_strip: INFO
