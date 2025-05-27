@@ -22,6 +22,13 @@ struct Tion4sRawUartFrame {
 };
 #pragma pack(pop)
 
+Tion4sUartProtocol::Tion4sUartProtocol()
+#ifdef TION_LOG_FLOOD_GUARD
+    : prev_magic_(Tion4sRawUartFrame::FRAME_MAGIC)
+#endif
+{
+}
+
 void Tion4sUartProtocol::read_uart_data(TionUartReader *io) {
   if (!this->reader) {
     TION_LOGE(TAG, "Reader is not configured");
@@ -49,7 +56,13 @@ Tion4sUartProtocol::read_frame_result_t Tion4sUartProtocol::read_frame_(TionUart
       return READ_THIS_LOOP;
     }
     if (frame->magic != Tion4sRawUartFrame::FRAME_MAGIC) {
-      TION_LOGW(TAG, "Unexpected byte: 0x%02X", frame->magic);
+#ifdef TION_LOG_FLOOD_GUARD
+      // защита от флуда, очень актуально при подключении в USB ПК
+      if (this->prev_magic_ != frame->magic) {
+        TION_LOGW(TAG, "Unexpected byte: 0x%02X", frame->magic);
+      }
+      this->prev_magic_ = frame->magic;
+#endif
       return READ_THIS_LOOP;
     }
   }
@@ -63,7 +76,7 @@ Tion4sUartProtocol::read_frame_result_t Tion4sUartProtocol::read_frame_(TionUart
     if (!io->read_array(&frame->size, frame_size_size)) {
       TION_LOGW(TAG, "Failed read frame size");
       this->reset_buf_();
-      return READ_THIS_LOOP;
+      return READ_THIS_LOOP;  // FIXME возможно лучше использовать READ_NEXT_LOOP
     }
   }
 
