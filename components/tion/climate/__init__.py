@@ -1,9 +1,8 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import climate
-from esphome.const import CONF_ICON
 
-from .. import new_pc, cgp, tion_ns
+from .. import cgp, new_pc, tion_ns
 
 TionClimate = tion_ns.class_("TionClimate", climate.Climate, cg.Component)
 
@@ -15,8 +14,8 @@ PC = new_pc(None)
 
 CONFIG_SCHEMA = PC.climate_schema(
     TionClimate,
-    {
-        cv.Optional(CONF_ICON, default=cgp.ICON_AIR_FILTER): cv.icon,
+    icon=cgp.ICON_AIR_FILTER,
+    ext_schema={
         cv.Optional(CONF_ENABLE_HEAT_COOL): cv.boolean,
         cv.Optional(CONF_ENABLE_FAN_AUTO): cv.boolean,
     },
