@@ -551,12 +551,41 @@ void TionApiBase::boost_enable_(uint16_t boost_time, TionStateCall *call) {
 
 void TionApiBase::boost_save_state_() {
   this->boost_save_.start_time = this->state_.work_time;
-  this->boost_save_.power_state = this->state_.power_state;
-  this->boost_save_.heater_state = this->state_.heater_state;
-  this->boost_save_.fan_speed = this->state_.fan_speed;
-  this->boost_save_.target_temperature = this->state_.target_temperature;
-  this->boost_save_.gate_position = this->state_.gate_position;
-  this->boost_save_.auto_state = this->state_.auto_state;
+  this->boost_save_.from_state(this->state_);
+}
+
+void TionApiBase::PresetData::from_state(const TionState &state) {
+  this->power_state = state.power_state;
+  this->heater_state = state.heater_state;
+  this->fan_speed = state.fan_speed;
+  this->target_temperature = state.target_temperature;
+  this->gate_position = state.gate_position;
+  this->auto_state = state.auto_state;
+}
+
+void TionApiBase::PresetData::to_call(TionStateCall *call) const {
+  if (call == nullptr) {
+    INVALID_STATE_CALL();
+    return;
+  }
+  if (this->power_state >= 0) {
+    call->set_power_state(this->power_state > 0);
+  }
+  if (this->heater_state >= 0) {
+    call->set_heater_state(this->heater_state > 0);
+  }
+  if (this->fan_speed != 0) {
+    call->set_fan_speed(this->fan_speed);
+  }
+  if (this->target_temperature != 0) {
+    call->set_target_temperature(this->target_temperature);
+  }
+  if (this->gate_position != TionGatePosition::UNKNOWN) {
+    call->set_gate_position(this->gate_position);
+  }
+  if (this->auto_state >= 0) {
+    call->set_auto_state(this->auto_state > 0);
+  }
 }
 
 void TionApiBase::boost_cancel_(TionStateCall *call) {
@@ -565,32 +594,7 @@ void TionApiBase::boost_cancel_(TionStateCall *call) {
   }
   TION_LOGD(TAG, "Boost finished");
   this->state_.boost_time_left = 0;
-  this->preset_enable_(this->boost_save_, call);
-}
-
-void TionApiBase::preset_enable_(const PresetData &preset, TionStateCall *call) {
-  if (call == nullptr) {
-    INVALID_STATE_CALL();
-    return;
-  }
-  if (preset.power_state >= 0) {
-    call->set_power_state(preset.power_state > 0);
-  }
-  if (preset.heater_state >= 0) {
-    call->set_heater_state(preset.heater_state > 0);
-  }
-  if (preset.fan_speed != 0) {
-    call->set_fan_speed(preset.fan_speed);
-  }
-  if (preset.target_temperature != 0) {
-    call->set_target_temperature(preset.target_temperature);
-  }
-  if (preset.gate_position != TionGatePosition::UNKNOWN) {
-    call->set_gate_position(preset.gate_position);
-  }
-  if (preset.auto_state >= 0) {
-    call->set_auto_state(preset.auto_state > 0);
-  }
+  this->boost_save_.to_call(call);
 }
 
 void TionApiBase::enable_preset(const std::string &preset, TionStateCall *call) {
@@ -605,7 +609,7 @@ void TionApiBase::enable_preset(const std::string &preset, TionStateCall *call) 
     return;
   }
   this->active_preset_ = preset;
-  this->preset_enable_(it->second, call);
+  it->second.to_call(call);
 }
 
 std::set<std::string> TionApiBase::get_presets() const {

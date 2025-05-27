@@ -15,6 +15,7 @@ from esphome.const import (
     CONF_LAMBDA,
     CONF_ON_STATE,
     CONF_POWER,
+    CONF_RESTORE_STATE,
     CONF_TEMPERATURE,
     CONF_TYPE,
 )
@@ -136,6 +137,7 @@ CONFIG_SCHEMA = cv.All(
                 cv.Optional(CONF_PRESETS): cv.Schema({cv.string_strict: PRESET_SCHEMA}),
                 cv.Optional(CONF_ON_STATE): cgp.automation_schema(StateTrigger),
                 cv.Optional(CONF_AUTO): AUTO_SCHEMA,
+                cv.Optional(CONF_RESTORE_STATE, default=False): cv.boolean,
             }
         )
         .extend(vport.VPORT_CLIENT_SCHEMA)
@@ -278,6 +280,9 @@ async def to_code(config: dict):
         await cgp.setup_automation(conf, CONF_ON_STATE, var, (TionStateRef, "x"))
         if CONF_AUTO in conf:
             await _setup_auto(conf[CONF_AUTO], var)
+        if conf[CONF_RESTORE_STATE]:
+            cg.add_define("USE_TION_RESTORE_STATE")
+            cg.add(var.set_rtc_key(conf[CONF_ID].id))
 
 
 def new_pc(pc_cfg: dict[str, str | dict[str, Any]]):

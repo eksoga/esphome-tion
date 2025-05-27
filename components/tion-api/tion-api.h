@@ -258,6 +258,9 @@ class TionApiBase {
     TionGatePosition gate_position;
     // <0 - без изменений, =0 - выкл, >0 - вкл
     int8_t auto_state;
+
+    void to_call(TionStateCall *call) const;
+    void from_state(const TionState &state);
   };
 
   using on_ready_type = etl::delegate<void()>;
@@ -331,7 +334,6 @@ class TionApiBase {
   void boost_enable_(uint16_t boost_time, TionStateCall *call);
   void boost_cancel_(TionStateCall *call);
   void boost_save_state_();
-  void preset_enable_(const PresetData &preset, TionStateCall *call);
   void auto_update_fan_speed_();
   uint8_t auto_pi_update_(uint16_t current);
 };

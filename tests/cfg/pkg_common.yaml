@@ -15,6 +15,7 @@ mqtt:
   broker: localhost
 
 tion:
+  restore_state: true
   auto:
     co2: fake_co2
 

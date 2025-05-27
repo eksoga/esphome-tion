@@ -92,6 +92,10 @@ class TionApiComponent : public PollingComponent {
   const dentra::tion::TionTraits &traits() const { return this->api_->get_traits(); }
   const dentra::tion::TionState &state() const { return this->api_->get_state(); }
 
+#ifdef USE_TION_RESTORE_STATE
+  void set_rtc_key(const char *key) { this->rtc_key_ = fnv1_hash(key); }
+#endif
+
  protected:
   TionApiBase *api_;
   bool force_update_{};
@@ -99,6 +103,12 @@ class TionApiComponent : public PollingComponent {
 
   uint32_t state_timeout_{};
   uint32_t batch_timeout_{};
+
+#ifdef USE_TION_RESTORE_STATE
+  // ключ и он же признак о необходимости загрузки
+  uint32_t rtc_key_{};
+  ESPPreferenceObject rtc_obj_;
+#endif
 
   CallbackManager<void(const TionState *)> state_callback_{};
 #ifdef TION_ENABLE_API_CONTROL_CALLBACK

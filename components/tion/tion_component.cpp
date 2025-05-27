@@ -36,6 +36,13 @@ void TionApiComponent::call_setup() {
     ESP_LOGW(TAG, "Invalid state timeout: %.1f s", this->state_timeout_ * 0.001f);
     this->state_timeout_ = 0;
   }
+#ifdef USE_TION_RESTORE_STATE
+  if (this->rtc_key_ != 0) {
+    this->rtc_obj_ = global_preferences->make_preference<TionApiBase::PresetData>(this->rtc_key_);
+  } else {
+    this->mark_failed();
+  }
+#endif
 }
 
 // обработка и обновление App.app_state_ происходит только для компонентов
@@ -64,7 +71,30 @@ void TionApiComponent::on_state_(const TionState &state, const uint32_t request_
   this->status_clear_error();
   this->cancel_timeout(STATE_TIMEOUT);
   // notify state
-  this->defer([this]() { this->state_callback_.call(&this->state()); });
+  this->defer([this]() {
+#ifdef USE_TION_RESTORE_STATE
+    bool process_state = true;
+    if (this->rtc_key_ != 0) {
+      this->rtc_key_ = 0;  // сбрасываем ключ чтобы не пытаться восстановить данные повторно
+      TionApiBase::PresetData data;
+      if (this->rtc_obj_.load(&data)) {
+        process_state = false;
+        dentra::tion::TionStateCall call(this->api());
+        data.to_call(&call);
+        call.perform();
+      }
+    }
+    if (process_state) {
+      this->state_callback_.call(&this->state());
+
+      TionApiBase::PresetData data;  // не инициализируем, все поля будут заполнены из from_state
+      data.from_state(this->state());
+      this->rtc_obj_.save(&data);
+    }
+#else
+    this->state_callback_.call(&this->state());
+#endif
+  });
 }
 
 void TionApiComponent::state_check_schedule_() {
