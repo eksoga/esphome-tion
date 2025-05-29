@@ -22,15 +22,21 @@ class TionLtApi : public TionApiBase, public tion::TionApiWriter {
   bool factory_reset(const TionState &state, uint32_t request_id = 1) const;
   bool reset_errors(const TionState &state, uint32_t request_id = 1) const;
 
-  void set_button_presets(const dentra::tion_lt::button_presets_t &button_presets);
-
   void request_state() override;
   void write_state(TionStateCall *call) override {
     this->write_state(this->make_write_state_(call), ++this->request_id_);
   }
   void reset_filter() override { this->reset_filter(this->state_, ++this->request_id_); }
 
-  void enable_kiv_support();
+  void set_button_presets(const dentra::tion_lt::button_presets_t &button_presets) {
+    this->button_presets_ = button_presets;
+  }
+
+  void enable_kiv_support() {
+#ifdef TION_ENABLE_KIV
+    this->traits_.supports_kiv = true;
+#endif
+  }
 
  protected:
   tion_lt::button_presets_t button_presets_{

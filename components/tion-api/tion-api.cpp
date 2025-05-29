@@ -170,19 +170,21 @@ const char *TionState::get_gate_position_str(const TionTraits &traits) const {
 }
 
 TionState TionApiBase::make_write_state_(TionStateCall *call) const {
+  // текущее состояние
   const auto &cs = this->state_;
-  // new state
+  // новое состояние
   auto ns = this->state_;
 
   if (call->get_auto_state().has_value()) {
     const auto auto_state = *call->get_auto_state();
-    if (!auto_state || this->auto_is_valid()) {
-      if (cs.auto_state != auto_state) {
+    if (cs.auto_state != auto_state) {
+      if (auto_state && !this->auto_is_valid()) {
+        TION_LOGW(TAG, "Auto is not configured properly.");
+        ns.auto_state = false;
+      } else {
         TION_LOGD(TAG, "New auto state %s -> %s", ONOFF(cs.auto_state), ONOFF(auto_state));
         ns.auto_state = auto_state;
       }
-    } else {
-      TION_LOGW(TAG, "Auto is not configured properly.");
     }
   }
 
@@ -190,8 +192,10 @@ TionState TionApiBase::make_write_state_(TionStateCall *call) const {
 
   if (call->get_fan_speed().has_value()) {
     const auto fan_speed = *call->get_fan_speed();
-    // не разрешаем скорость 0, вместо этого выключаем бризер
-    if (fan_speed == 0) {
+
+    // скорость 0 поддерживается не для всех бризеров
+    if (fan_speed == 0 && !this->traits_.supports_kiv) {
+      // не разрешаем скорость 0, вместо этого выключаем бризер
       if (call->get_power_state().value_or(cs.power_state)) {
         // залоггируем только для не авто-режима
         if (!call->get_auto_state().value_or(false)) {
@@ -204,9 +208,13 @@ TionState TionApiBase::make_write_state_(TionStateCall *call) const {
     } else if (cs.fan_speed != fan_speed) {
       TION_LOGD(TAG, "New fan speed %u -> %u", cs.fan_speed, fan_speed);
       ns.fan_speed = fan_speed;
+
       if (!call->get_auto_state().value_or(false)) {
         // если ручное переключение скорости, то выключаем авто-режим
         ns.auto_state = false;
+      } else if (fan_speed > 0 && !cs.power_state) {
+        // в автоматическом режиме бризер нужно включить
+        call->set_power_state(true);
       }
     }
   }
@@ -216,10 +224,9 @@ TionState TionApiBase::make_write_state_(TionStateCall *call) const {
     if (cs.power_state != power_state) {
       TION_LOGD(TAG, "New power state %s -> %s", ONOFF(cs.power_state), ONOFF(power_state));
       ns.power_state = power_state;
-      // если выключаем в авто-режиме и это не делает не авто-режим, то отключаем авто-режим
-      if (!power_state && !call->get_auto_state().value_or(false)) {
-        // TODO восстановить авто-режим при включении
-        // возможно необходимо исследовать тему CommSource и применять их совместно
+      // если ручное выключение, то выключаем авто-режим
+      if (!call->get_auto_state().value_or(false) && !power_state) {
+        // TODO восстановить авто-режим при ручном включении
         ns.auto_state = false;
       }
     }
@@ -304,6 +311,19 @@ TionState TionApiBase::make_write_state_(TionStateCall *call) const {
       TION_LOGW(TAG, "Antifreeze protection has worked. Heater now enabled.");
       ns.heater_state = true;
     }
+  }
+
+  if (this->traits_.supports_kiv && ns.power_state && ns.fan_speed == 0) {
+    // для предотвращения обморожения не разрешаем работу в режиме kiv если внешняя температура менее 5 °C
+    if (this->state_.outdoor_temperature < 5) {
+      ns.power_state = false;
+      TION_LOGW(TAG, "KIV mode not supported when outdoor temperature less than 5 °C");
+    } else
+      // не разрешаем работу в режиме kiv если включен обогреватель
+      if (ns.heater_state) {
+        ns.power_state = false;
+        TION_LOGW(TAG, "KIV mode not supported when heater is on");
+      }
   }
 
   return ns;
@@ -718,6 +738,11 @@ bool TionApiBase::auto_update(uint16_t current, TionStateCall *call) {
     return false;
   }
 
+  // режим турбо имеет приоритет
+  if (this->state_.boost_time_left > 0) {
+    return false;
+  }
+
   if (call == nullptr) {
     INVALID_STATE_CALL();
     return false;
@@ -729,19 +754,17 @@ bool TionApiBase::auto_update(uint16_t current, TionStateCall *call) {
     fan_speed = this->auto_update_func_(current);
     if (fan_speed < this->auto_min_fan_speed_) {
       fan_speed = this->auto_min_fan_speed_;
-
     } else if (fan_speed > this->auto_max_fan_speed_) {
       fan_speed = this->auto_max_fan_speed_;
     }
   } else {
     fan_speed = this->auto_pi_update_(current);
   }
+
   if (fan_speed == this->state_.fan_speed) {
     return false;
   }
-  if (this->state_.boost_time_left > 0) {
-    return false;
-  }
+
   TION_LOGV(TAG, "Auto new fan speed %u", fan_speed);
   // для понимания, что переключение было из авто-режима, всегда выставляем авто
   call->set_auto_state(true);

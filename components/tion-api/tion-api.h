@@ -37,6 +37,7 @@ struct TionTraits {
     // true means native boost support
     bool supports_boost : 1;
     bool supports_reset_filter : 1;
+    // true means native zero speed support
     bool supports_kiv : 1;
   };
 

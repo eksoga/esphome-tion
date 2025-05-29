@@ -3,8 +3,6 @@ from typing import Any
 
 import esphome.codegen as cg
 import esphome.config_validation as cv
-import esphome.cpp_generator as cpp
-import esphome.final_validate as fv
 from esphome import automation, core
 from esphome.components import sensor as esphome_sensor
 from esphome.const import (
@@ -35,18 +33,20 @@ CONF_FAN_SPEED = "fan_speed"
 CONF_GATE_POSITION = "gate_position"
 CONF_AUTO = "auto"
 CONF_BUTTON_PRESETS = "button_presets"
+CONF_ENABLE_KIV = "enable_kiv"
 
 CONF_STATE_TIMEOUT = "state_timeout"
 CONF_STATE_WARNOUT = "state_warnout"
 CONF_BATCH_TIMEOUT = "batch_timeout"
 
-CONF_SETPOINT = "setpoint"
-CONF_MIN_FAN_SPEED = f"min_{CONF_FAN_SPEED}"
-CONF_MAX_FAN_SPEED = f"max_{CONF_FAN_SPEED}"
-CONF_PI_CONTROLLER = "pi_controller"
-CONF_KP = "kp"
-CONF_TI = "ti"
-CONF_DB = "db"
+CONF_AUTO_CO2 = CONF_CO2
+CONF_AUTO_SETPOINT = "setpoint"
+CONF_AUTO_MIN_FAN_SPEED = f"min_{CONF_FAN_SPEED}"
+CONF_AUTO_MAX_FAN_SPEED = f"max_{CONF_FAN_SPEED}"
+CONF_AUTO_PI_CONTROLLER = "pi_controller"
+CONF_AUTO_KP = "kp"
+CONF_AUTO_TI = "ti"
+CONF_AUTO_DB = "db"
 
 tion_ns = cg.esphome_ns.namespace("tion")
 dentra_tion_ns = cg.global_ns.namespace("dentra").namespace("tion")
@@ -100,15 +100,15 @@ BUTTON_PRESETS_SCHEMA = cv.Schema(
 
 AUTO_SCHEMA = cv.Schema(
     {
-        cv.Required(CONF_CO2): cv.use_id(esphome_sensor.Sensor),
-        cv.Optional(CONF_SETPOINT): cv.int_range(500, 1400),
-        cv.Inclusive(CONF_MIN_FAN_SPEED, "auto_fan_speed"): cv.int_range(0, 5),
-        cv.Inclusive(CONF_MAX_FAN_SPEED, "auto_fan_speed"): cv.int_range(1, 6),
-        cv.Exclusive(CONF_PI_CONTROLLER, "auto_mode"): cv.Any(
+        cv.Required(CONF_AUTO_CO2): cv.use_id(esphome_sensor.Sensor),
+        cv.Optional(CONF_AUTO_SETPOINT): cv.int_range(500, 1400),
+        cv.Inclusive(CONF_AUTO_MIN_FAN_SPEED, "auto_fan_speed"): cv.int_range(0, 5),
+        cv.Inclusive(CONF_AUTO_MAX_FAN_SPEED, "auto_fan_speed"): cv.int_range(1, 6),
+        cv.Exclusive(CONF_AUTO_PI_CONTROLLER, "auto_mode"): cv.Any(
             {
-                cv.Optional(CONF_KP, default=0.2736): cv.float_range(min=0.001),
-                cv.Optional(CONF_TI, default=8): cv.float_range(min=0.001),
-                cv.Optional(CONF_DB, default=20): cv.int_range(-100, 100),
+                cv.Optional(CONF_AUTO_KP, default=0.2736): cv.float_range(min=0.001),
+                cv.Optional(CONF_AUTO_TI, default=8): cv.float_range(min=0.001),
+                cv.Optional(CONF_AUTO_DB, default=20): cv.int_range(-100, 100),
             },
             None,
         ),
@@ -138,6 +138,7 @@ CONFIG_SCHEMA = cv.All(
                 cv.Optional(CONF_ON_STATE): cgp.automation_schema(StateTrigger),
                 cv.Optional(CONF_AUTO): AUTO_SCHEMA,
                 cv.Optional(CONF_RESTORE_STATE, default=False): cv.boolean,
+                cv.Optional(CONF_ENABLE_KIV, default=False): cv.boolean,
             }
         )
         .extend(vport.VPORT_CLIENT_SCHEMA)
@@ -250,16 +251,16 @@ if ({api}->auto_update(x, call)) {{
         value=core.Lambda(code.strip()), parameters=[(cg.float_, "x")], capture=""
     )
 
-    cg.add(cg.MockObj(config[CONF_CO2].id, "->").add_on_state_callback(lam))
+    cg.add(cg.MockObj(config[CONF_AUTO_CO2].id, "->").add_on_state_callback(lam))
 
-    cgp.setup_value(config, CONF_SETPOINT, api.set_auto_setpoint)
-    cgp.setup_value(config, CONF_MIN_FAN_SPEED, api.set_auto_min_fan_speed)
-    cgp.setup_value(config, CONF_MAX_FAN_SPEED, api.set_auto_max_fan_speed)
+    cgp.setup_value(config, CONF_AUTO_SETPOINT, api.set_auto_setpoint)
+    cgp.setup_value(config, CONF_AUTO_MIN_FAN_SPEED, api.set_auto_min_fan_speed)
+    cgp.setup_value(config, CONF_AUTO_MAX_FAN_SPEED, api.set_auto_max_fan_speed)
 
-    if CONF_PI_CONTROLLER in config:
+    if CONF_AUTO_PI_CONTROLLER in config:
         cgp.setup_values(
-            config[CONF_PI_CONTROLLER] or {},
-            [CONF_KP, CONF_TI, CONF_DB],
+            config[CONF_AUTO_PI_CONTROLLER] or {},
+            [CONF_AUTO_KP, CONF_AUTO_TI, CONF_AUTO_DB],
             api.set_auto_pi_data,
         )
 
@@ -283,6 +284,8 @@ async def to_code(config: dict):
         if conf[CONF_RESTORE_STATE]:
             cg.add_define("USE_TION_RESTORE_STATE")
             cg.add(var.set_rtc_key(conf[CONF_ID].id))
+        if CONF_ENABLE_KIV:
+            cg.add_build_flag("-DTION_ENABLE_KIV")
 
 
 def new_pc(pc_cfg: dict[str, str | dict[str, Any]]):

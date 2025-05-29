@@ -194,24 +194,8 @@ bool TionLtApi::reset_errors(const TionState &state, uint32_t request_id) const 
 }
 
 void TionLtApi::fix_st_set_(tionlt_state_set_req_t *set) const {
-  if (set->data.fan_speed != 0) {
-    return;
-  }
-  if (!this->traits_.supports_kiv) {
+  if (set->data.fan_speed == 0 && !this->traits_.supports_kiv) {
     set->data.fan_speed = 1;
-    return;
-  }
-  // для предотвращения обморожения не разрешаем работу в режиме kiv если внешняя температура менее 5 °C
-  if (this->state_.outdoor_temperature < 5) {
-    set->data.fan_speed = 1;
-    TION_LOGW(TAG, "KIV mode not supported when outdoor temperature less than 5 °C");
-    return;
-  }
-  // не разрешаем работу в режиме kiv если включен обогреватель
-  if (set->data.heater_state) {
-    set->data.fan_speed = 1;
-    TION_LOGW(TAG, "KIV mode not supported when heater is on");
-    return;
   }
 }
 
@@ -309,12 +293,6 @@ void TionLtApi::dump_state_(const tionlt_state_t &state) const {
   TION_DUMP(TAG, "test_type   : 0x%02X (%s)", state.test_type, tion::get_flag_bits(state.test_type));
   TION_DUMP(TAG, "reserved    : 0x%02X (%s)", state.reserved, tion::get_flag_bits(state.reserved));
 }
-
-void TionLtApi::set_button_presets(const dentra::tion_lt::button_presets_t &button_presets) {
-  this->button_presets_ = button_presets;
-}
-
-void TionLtApi::enable_kiv_support() { this->traits_.supports_kiv = true; }
 
 }  // namespace tion
 }  // namespace dentra

@@ -35,20 +35,20 @@ void TionFan::control(const fan::FanCall &call) {
     auto preset_mode = call.get_preset_mode();
     if (!preset_mode.empty()) {
       const auto &preset = preset_mode;
-      ESP_LOGD(TAG, "Set preset %s", preset.c_str());
+      TION_C_LOGD(TAG, "Set preset: %s", preset.c_str());
       this->parent_->api()->enable_preset(preset, tion);
     }
   }
 
   if (call.get_state().has_value()) {
     const auto state = *call.get_state();
-    ESP_LOGD(TAG, "Set state %s", ONOFF(state));
+    TION_C_LOGD(TAG, "Set state: %s", ONOFF(state));
     tion->set_power_state(state);
   }
 
   if (call.get_speed().has_value()) {
     const auto fan_speed = *call.get_speed();
-    ESP_LOGD(TAG, "Set speed %u", fan_speed);
+    TION_C_LOGD(TAG, "Set speed: %u", fan_speed);
     tion->set_fan_speed(fan_speed);
   }
 

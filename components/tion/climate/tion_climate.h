@@ -32,8 +32,18 @@ class TionClimate : public climate::Climate, public Component, public Parented<T
   bool enable_fan_auto_{};
   void on_state_(const TionState &state);
   // важно this->mode уже должен быть выставлен в актуальное значение
-  // отрицательное значение - автоматическая скорость вентиляции
-  bool set_fan_speed_(int8_t fan_speed);
+  bool set_fan_speed_(const TionState &state);
+
+  bool set_fan_mode_(climate::ClimateFanMode mode) {
+    // изменяем только если не установлено или не установлено другое
+    if (!this->fan_mode.has_value() || *this->fan_mode != mode) {
+      // обязательно сбрасываем кастомный режим
+      this->custom_fan_mode.reset();
+      this->fan_mode = mode;
+      return true;
+    }
+    return false;
+  }
 };
 
 }  // namespace tion

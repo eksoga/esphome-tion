@@ -273,14 +273,14 @@ struct Boost : public binary_sensor::Boost {
 namespace sensor {
 struct FanSpeed {
   static const char *get_icon(TionApiComponent *c) {
-    if (!c->state().power_state) {
-      return "mdi:fan-off";
-    }
     if (c->state().boost_time_left > 0) {
       return "mdi:fan-clock";
     }
     if (c->state().auto_state) {
       return "mdi:fan-auto";
+    }
+    if (!c->state().power_state) {
+      return "mdi:fan-off";
     }
     if (c->state().fan_speed == 1) {
       return "mdi:fan-speed-1";
@@ -405,15 +405,22 @@ namespace number {
 
 struct FanSpeed : public sensor::FanSpeed {
   static void set(TionApiComponent *c, TionStateCall *call, uint8_t state) {
+    if (c->traits().supports_kiv) {
+      call->set_fan_speed(state);
+      return;
+    }
+
     if (state) {
       if (state != c->state().fan_speed) {
         call->set_power_state(true);
         call->set_fan_speed(state);
       }
-    } else {
-      if (c->state().power_state) {
-        call->set_power_state(false);
-      }
+      return;
+    }
+
+    // state == 0
+    if (c->state().power_state) {
+      call->set_power_state(false);
     }
   }
 

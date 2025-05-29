@@ -15,6 +15,12 @@
 #include "../tion-api/tion-api-lt.h"
 #include "tion_vport.h"
 
+#define TION_C_LOG_(log, tag, fmt, ...) log(tag, "'%s' - " fmt, this->get_name().c_str(), ##__VA_ARGS__)
+#define TION_C_LOGV(tag, fmt, ...) TION_C_LOG_(ESP_LOGV, tag, fmt, ##__VA_ARGS__)
+#define TION_C_LOGD(tag, fmt, ...) TION_C_LOG_(ESP_LOGD, tag, fmt, ##__VA_ARGS__)
+#define TION_C_LOGI(tag, fmt, ...) TION_C_LOG_(ESP_LOGI, tag, fmt, ##__VA_ARGS__)
+#define TION_C_LOGW(tag, fmt, ...) TION_C_LOG_(ESP_LOGW, tag, fmt, ##__VA_ARGS__)
+
 namespace esphome {
 namespace tion {
 

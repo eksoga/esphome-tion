@@ -63,7 +63,7 @@ template<class C> class TionNumber : public number::Number, public Component, pu
         this->pref_ = global_preferences->make_preference<float>(this->get_object_id_hash());
         float value;
         if (this->pref_.load(&value)) {
-          ESP_LOGI(TAG, "Restored %s: %f", this->get_name().c_str(), value);
+          TION_C_LOGI(TAG, "Restored: %f", value);
           this->control(value);
         }
       }
@@ -80,7 +80,7 @@ template<class C> class TionNumber : public number::Number, public Component, pu
 
   void set_initial_value(float value) {
     if constexpr (PC::checker().has_api_set()) {
-      ESP_LOGD(TAG, "Set %s initial value: %f", this->get_name().c_str(), value);
+      TION_C_LOGD(TAG, "Set initial value: %f", value);
       this->control(value);
     }
   }
