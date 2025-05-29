@@ -116,7 +116,9 @@ tion:
   state_timeout: 3s
   ## Optional, Updates sensor values on any state response or only if they have been changed. Default: false.
   force_update: false
-  ## Optional, Allow to completely stop the fan without closing air valve.
+  ## Optional, Periodically saves current state and restores it of power loss. Default: false.
+  restore_state: false
+  ## Optional, Allow to completely stop the fan without closing air valve. Default: false.
   ##   Limitations of fan off:
   ##     - min outdoor temperature is 5°C
   ##     - heater is off

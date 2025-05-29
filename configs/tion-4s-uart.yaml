@@ -113,6 +113,8 @@ tion:
   state_timeout: 3s
   ## Optional, Updates sensor values on any state response or only if they have been changed. Default: false.
   force_update: false
+  ## Optional, Periodically saves current state and restores it of power loss. Default: false.
+  restore_state: false
 
   ## Optional, Enable presets. Default: <empty> (no presets)
   ## You can define any number of presets with any name.
