@@ -1,3 +1,0 @@
-# this package is deprecated, please use esp32_s3_uart.yaml
-packages:
-  tion.esp32_s3_uart: !include esp32_s3_ble.yaml

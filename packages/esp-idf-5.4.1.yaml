@@ -1,0 +1,7 @@
+# ESP-IDF Framework 5.4.1
+# Platform: https://github.com/pioarduino/platform-espressif32/releases/tag/54.03.20
+esp32:
+  framework:
+    type: esp-idf
+    version: 5.4.1
+    platform_version: 54.3.20
