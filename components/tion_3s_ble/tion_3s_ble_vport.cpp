@@ -66,22 +66,20 @@ void Tion3sBleVPort::reset_pair() {
 
 void Tion3sBleVPort::on_ready_3s_() {
   this->pair_();
-  if (this->experimental_always_pair_) {
-    this->api_->pair();
-  }
   this->on_ready_();
 }
 
 void Tion3sBleVPort::pair_() {
-  // pairing in progress
-  if (this->pair_state_ < 0) {
+  if (this->experimental_always_pair_) {
+    this->api_->pair();
+  } else if (this->pair_state_ < 0) {  // pairing in progress
     const bool res = this->api_->pair();
     if (res) {
       this->pair_state_ = 1;
       this->rtc_.save(&this->pair_state_);
     }
     ESP_LOGD(TAG, "Pairing complete: %s", YESNO(res));
-  } else {
+  } else if (this->pair_state_ == 0) {  // not paired
     ESP_LOGW(TAG, "Pairing was not started");
   }
 }
