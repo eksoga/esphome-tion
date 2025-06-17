@@ -1,3 +1,0 @@
-# this package is deprecated, plase use esp8266_uart.yaml
-packages:
-  tion.esp8266_uart: !include esp8266_uart.yaml

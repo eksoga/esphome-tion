@@ -1,3 +1,0 @@
-# this package is deprecated, plase use esp32_c3_uart.yaml
-packages:
-  tion.esp32_c3_uart: !include esp32_c3_uart.yaml
