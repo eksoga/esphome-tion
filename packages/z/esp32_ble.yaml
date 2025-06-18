@@ -1,0 +1,20 @@
+substitutions:
+  tion_conn: ble
+
+packages:
+  z.esp32: !include esp32.yaml
+
+esp32_ble_tracker:
+  id: tion_esp32_ble_tracker
+
+ble_client:
+  - mac_address: $tion_mac_address
+    id: tion_ble_client
+
+ota:
+  - id: !extend esphome_ota
+    platform: esphome
+    on_begin:
+      then:
+        lambda: |-
+          id(tion_ble_client).set_enabled(false);

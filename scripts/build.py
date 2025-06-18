@@ -42,7 +42,10 @@ class Build:
 
     @property
     def fw_name(self):
-        fw_name = f"tion-{self.br_type}-{self.br_port}"
+        fw_name = ""
+        if self.is_dev:
+            fw_name += "gen-"
+        fw_name += f"tion-{self.br_type}-{self.br_port}"
         if self.br_conn:
             fw_name += f"-{self.br_conn}"
         if self.is_dev:
@@ -67,10 +70,14 @@ class Build:
             )
 
         trace(f"config_path  : {CORE.config_path}")
-        trace(f"build_path   : {
-            os.path.join(".", os.path.relpath(CORE.build_path))}")
-        trace(f"pioenvs_path : {
-            os.path.join(".", os.path.relpath(CORE.relative_pioenvs_path(CORE.name)))}")
+        trace(f"build_path   : {os.path.join('.', os.path.relpath(CORE.build_path))}")
+        trace(
+            f"pioenvs_path : {
+                os.path.join(
+                    '.', os.path.relpath(CORE.relative_pioenvs_path(CORE.name))
+                )
+            }"
+        )
         trace(f"node_name    : {CORE.name}")
         trace(f"friendly_name: {CORE.friendly_name}")
 

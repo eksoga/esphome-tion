@@ -1,0 +1,104 @@
+common/wifi_signal:
+  comment: Additional WiFi signal sensor.
+{%- if port == "ble" %}
+common/rssi_signal:
+  comment: Additional BLE RSSI sensor.
+{%- endif %}
+common/uptime:
+    comment: Additional Uptime sensor.
+common/restart:
+  comment: Additional Restart button.
+common/esp32_temperature:
+  comment: Internal ESP32 temperature sensor.
+  enabled: {{ not is_prod and not (type == "3s" and port == "uart") }}
+common/web_server:
+  comment: Web server support.
+  enabled: {{ not is_prod }}
+{%- if type not in ['4s', '3s'] %}
+tion/temperature30c:
+  comment: Unlock Tion 30°C heating.
+  enabled: false
+{%- endif %}
+tion/energy:
+  comment: |-
+    Additional {{ '' if type in ['4s', 'lt'] else 'virtual' }} energy sensor.
+    !!! Be sure to uncomment mqtt.yaml if you use it with MQTT.
+  enabled: {{ not is_prod }}
+{# {%- if type == 'o2' and port == 'uart' %}
+tion/o2_proxy:
+  comment: UART proxy support.
+{%- endif %} #}
+{%- if type in ['3s', 'o2'] %}
+tion/enable_antifreeze:
+  comment: Antifreeze protection. Automatically turns on the heater at a temperature of 0°C and below.
+{%- endif %}
+base:
+  comment: Common configuration settings. Do not comment or move or remove!
+
+{%- if platform %}
+{{ platform }}_{{ port }}:
+{%- elif type == "3s" and port == "uart" %}
+esp8266_{{ port }}:
+{%- else %}
+esp32_{{ "s3_" if type in ["4s", "o2"] and port == "uart" else "" }}{{ port }}:
+{%- endif %}
+  comment: |-
+    Base platform support package:
+      esp32_{{ port }}.yaml    - ESP32
+      esp32_s3_{{ port }}.yaml - ESP32-S3
+  {%- if port == "uart" %}
+      esp32_s2_{{ port }}.yaml - ESP32-S2
+  {%- endif %}
+      esp32_c3_{{ port }}.yaml - ESP32-C3
+      esp32_c6_{{ port }}.yaml - ESP32-C6
+
+{%- if type == "3s" and port == "uart" %}
+tion/3s_proxy:
+  comment: Proxy internal Tion BLE module.
+  enabled: {{ not is_prod }}
+{%- endif %}
+
+tion/auto_co2:
+  comment: Enable automatic fan speed management with CO2 sensor.
+  enabled: {{ not is_prod }}
+tion/auto_co2_config:
+  comment: Enable additional entities to auto_co2 configuration.
+  enabled: {{ not is_prod }}
+
+{%- if port == "ble" %}
+esp-idf/4.4.7:
+  comment: If you have problems with BLE connection, try to use different ESP-IDF framework.
+  enabled: {{ not is_prod and type == "3s" }}
+tion/persistent:
+  comment: Persistent connection runtime control switch.
+  enabled: {{ not is_prod }}
+common/ble_connect:
+  comment: Additional connect switch useful for debugging.
+  enabled: {{ not is_prod }}
+{%- endif %}
+{%- if type == "4s" %}
+tion/4s_timers:
+  comment: Tion internal timers support.
+  enabled: {{ not is_prod }}
+{%- endif %}
+
+mqtt:
+  comment: Uncomment to use MQTT.
+  enabled: {{ conn == "mqtt" }}
+spruthub:
+  comment: Uncomment to use it with SprutHub. Must be right after mqtt.yaml.
+  enabled: {{ conn == "mqtt" and type == "4s" }}
+
+board/lilygo:
+  comment: Lilygo T-Dongle S3 support package.
+  enabled: {{ board == "lilygo" or (type == "4s" and port == "uart" and board != "lilygo") }}
+board/seeed_c6:
+  comment: XIAO SEEED ESP32-C6 support package.
+  enabled: {{ board == "seeed_c6" }}
+
+debug:
+  comment: Additional debug information.
+  enabled: false
+
+tion/{{ type }}:
+  comment: Tion type package. Do not comment or move or remove!

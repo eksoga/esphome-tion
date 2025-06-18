@@ -1,0 +1,5 @@
+declaration:
+  - lambda: |-
+      #ifndef TION_PKG_ESP32_C6_INCLUDED
+        #error esp32_c6_[uart|ble].yaml was not included
+      #endif

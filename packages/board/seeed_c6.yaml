@@ -1,0 +1,36 @@
+substitutions:
+  board: esp32-c6-devkitc-1
+  board_code: seeed_xiao_esp32c6
+  board_name: Seeed Studio XIAO ESP32C6
+  # Tion UART
+  tx_pin: $u0txd_pin
+  rx_pin: $u0rxd_pin
+  # Yellow USER LED
+  led_pin: GPIO15
+  led_pin_inverted: "true"
+  led_pin_ignore_strapping_warning: "true"
+  # BOOT Button
+  button_pin: GPIO9
+
+packages:
+  z.logger_jtag: !include ../z/logger_jtag.yaml
+  z.status: !include ../z/status.yaml
+  z.button: !include ../z/button.yaml
+  z.package_check: !include ../z/check_esp32_с6.yaml
+
+esphome:
+  platformio_options:
+    # https://files.seeedstudio.com/wiki/SeeedStudio-XIAO-ESP32C6/boards.txt
+    # XIAO_ESP32C6.build.flash_mode=qio
+    board_build.flash_mode: qio
+
+esp32:
+  flash_size: 4MB
+  framework:
+    sdkconfig_options:
+      # Fix flash size warning
+      CONFIG_ESPTOOLPY_FLASHSIZE_4MB: y
+      # Enable QIO mode
+      CONFIG_ESPTOOLPY_FLASHMODE_QIO: "y"
+      CONFIG_FLASHMODE_QIO: "y"
+

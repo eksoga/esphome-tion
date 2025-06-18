@@ -1,8 +1,15 @@
 substitutions:
+  # Board definition
   board: esp32-c6-devkitc-1
+  # UART0
+  u0txd_pin: GPIO16
+  u0rxd_pin: GPIO17
+  # USB
+  usb_dm_pin: GPIO12
+  usb_dp_pin: GPIO13
 
 packages:
-  tion.esp32_uart: !include esp32_uart.yaml
+  tion.esp32_uart: !include z/esp32_uart.yaml
 
 esphome:
   platformio_options:
@@ -14,9 +21,12 @@ esp32:
 
 declaration:
   - include: esp_idf_version.h
+  - lambda: |-
+      #define TION_PKG_ESP32_C6_INCLUDED
 
 setup:
   - lambda: |-
       #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 3, 0)
       #error ESP32C6 requires ESP-IDF 5.3.0 and higher
       #endif
+

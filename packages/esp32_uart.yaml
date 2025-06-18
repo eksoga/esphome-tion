@@ -1,24 +1,13 @@
 substitutions:
-  tion_conn: uart
+  # Board definition
   board: esp32dev
-  board_code: $board
-  tx_pin: TX
-  rx_pin: RX
-  baud_rate: "9600"
+  # UART0
+  u0txd_pin: TX
+  u0rxd_pin: RX
 
-esp32:
-  board: $board
-  framework:
-    type: esp-idf
+packages:
+  tion.esp32_uart: !include z/esp32_uart.yaml
 
-logger:
-  # Make sure logging is not using the serial port
-  baud_rate: 0
-  logs:
-    esp-idf: INFO
-
-uart:
-  - id: tion_uart
-    tx_pin: $tx_pin
-    rx_pin: $rx_pin
-    baud_rate: $baud_rate
+declaration:
+  - lambda: |-
+      #define TION_PKG_ESP32_INCLUDED

@@ -1,0 +1,32 @@
+# this package is internal. do not use it directly!
+# required included z/status.yaml first.
+substitutions:
+  button_pin: GPIO0
+  button_pin_inverted: "true"
+  button_pin_ignore_strapping_warning: "true"
+
+binary_sensor:
+  - platform: gpio
+    id: z_button
+    name: Onboard Button
+    icon: mdi:radiobox-marked
+    internal: true
+    entity_category: diagnostic
+    pin:
+      number: $button_pin
+      inverted: $button_pin_inverted
+      ignore_strapping_warning: $button_pin_ignore_strapping_warning
+    on_multi_click:
+      - timing:
+          - on for at least 7s
+        then:
+          - lambda: |-
+              auto call = id(z_status_led).turn_on();
+              call.set_effect("fast_pulse");
+              call.perform();
+          - delay: 2s
+          - lambda: |-
+              global_preferences->reset();
+          - delay: 200ms
+          - lambda: |-
+              App.safe_reboot();

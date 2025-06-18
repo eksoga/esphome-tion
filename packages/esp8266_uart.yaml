@@ -1,21 +1,24 @@
 substitutions:
   tion_conn: uart
+  # Board definition
   board: esp01_1m
   board_code: $board
-  tx_pin: TX
-  rx_pin: RX
-  baud_rate: "115200"
+
+packages:
+  # Make sure logging is not using the serial port
+  z.logger_none: !include z/logger_none.yaml
+  z.assert_esp: !include z/assert_esp.yaml
 
 esp8266:
   board: $board
   restore_from_flash: true
-
-logger:
-  # Make sure logging is not using the serial port
-  baud_rate: 0
 
 uart:
   - id: tion_uart
     tx_pin: $tx_pin
     rx_pin: $rx_pin
     baud_rate: $baud_rate
+
+declaration:
+  - lambda: |-
+      #define TION_PKG_ESP8266_INCLUDED

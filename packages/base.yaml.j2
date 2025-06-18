@@ -26,6 +26,7 @@ esphome:
     name: "dentra.$project_id-${tion_type}-${tion_conn}-${board_code}"
     version: "$project_version"
   min_version: "{{ version_esphome }}"
+  # TODO remove after https://github.com/esphome/esphome/pull/8603 get released
   platformio_options:
     build_flags:
       - -std=gnu++17
@@ -50,7 +51,6 @@ external_components:
       - etl
       - otax
       - vport
-      - esp32_usb_dis
       - settings
       - coredump
       - partitions
@@ -62,3 +62,13 @@ external_components:
     refresh: $vport_source_refresh
   - source: $project_source
     refresh: $project_source_refresh
+
+declaration:
+  - lambda: |-
+      #if $tion_package_not_included
+        #error tion_[4s|3s|lt|o2].yaml was not included
+      #endif
+  - lambda: |-
+      #if defined(USE_API) && defined(USE_MQTT) && !defined(TION_SKIP_CONNECTION_CHECK)
+        #error Do not use "mqtt:" and "api:" sections together or define TION_SKIP_CONNECTION_CHECK
+      #endif

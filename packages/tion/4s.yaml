@@ -1,0 +1,8 @@
+substitutions:
+  tion_package_not_included: "false"
+  tion_type: 4s
+  tion_model: 4S
+  baud_rate: "9600"
+
+packages:
+  tion.temp30: !include temperature30c.yaml

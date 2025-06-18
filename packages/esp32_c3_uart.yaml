@@ -1,13 +1,26 @@
 substitutions:
+  # Board definition
   board: esp32-c3-devkitm-1
-  tx_pin: GPIO20
-  rx_pin: GPIO19
+  # UART0
+  u0txd_pin: GPIO21
+  u0rxd_pin: GPIO20
+  # USB
+  usb_dm_pin: GPIO18
+  usb_dp_pin: GPIO19
 
 packages:
-  tion.esp32_uart: !include esp32_uart.yaml
+  tion.esp32_uart: !include z/esp32_uart.yaml
 
 esphome:
   platformio_options:
     board_build.flash_mode: dio
 
-esp32_usb_dis:
+setup:
+  - lambda: |-
+      #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 3, 0)
+      #error ESP32C6 requires ESP-IDF 5.3.0 and higher
+      #endif
+
+declaration:
+  - lambda: |-
+      #define TION_PKG_ESP32_C3_INCLUDED

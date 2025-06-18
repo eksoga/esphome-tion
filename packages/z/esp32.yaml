@@ -1,0 +1,14 @@
+substitutions:
+  board_code: $board
+
+packages:
+  z.assert_esp: !include assert_esp.yaml
+
+esp32:
+  board: $board
+  framework:
+    type: esp-idf
+
+logger:
+  logs:
+    esp-idf: INFO

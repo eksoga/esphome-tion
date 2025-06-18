@@ -41,3 +41,11 @@ setup:
           .topic = status_topic, .payload = "offline", .qos = 0, .retain = true
         });
       }
+
+declaration:
+  - lambda: |-
+      #ifdef TION_PKG_MQTT_INCLUDED
+        #error Package mqtt.yaml already included
+      #else
+        #define TION_PKG_MQTT_INCLUDED
+      #endif

@@ -1,0 +1,13 @@
+substitutions:
+  tion_conn: uart
+
+packages:
+  z.esp32: !include esp32.yaml
+  # Make sure logging is not using the serial port
+  z.logger_none: !include logger_none.yaml
+
+uart:
+  - id: tion_uart
+    tx_pin: $tx_pin
+    rx_pin: $rx_pin
+    baud_rate: $baud_rate

@@ -1,0 +1,6 @@
+declaration:
+  - lambda: |-
+      #ifdef TION_PKG_ESP_INCLUDED
+        #error Some esp platform package already included
+      #endif
+      #define TION_PKG_ESP_INCLUDED

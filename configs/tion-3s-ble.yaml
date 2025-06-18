@@ -24,61 +24,66 @@ packages:
       ## You can enable or disable some of the features listed below.
       ## The disabled feature starts with # symbol.
       ## The indentation before uncommented package is very important!
-
+      
       ## Additional WiFi signal sensor.
-      - packages/wifi_signal.yaml
+      - packages/common/wifi_signal.yaml
       ## Additional BLE RSSI sensor.
-      - packages/rssi_signal.yaml
+      - packages/common/rssi_signal.yaml
       ## Additional Uptime sensor.
-      - packages/uptime.yaml
+      - packages/common/uptime.yaml
       ## Additional Restart button.
-      - packages/restart.yaml
+      - packages/common/restart.yaml
+      ## Internal ESP32 temperature sensor.
+      # - packages/common/esp32_temperature.yaml
+      ## Web server support.
+      # - packages/common/web_server.yaml
       ## Additional virtual energy sensor.
       ## !!! Be sure to uncomment mqtt.yaml if you use it with MQTT.
-      #- packages/tion_energy.yaml
-      
+      # - packages/tion/energy.yaml
       ## Antifreeze protection. Automatically turns on the heater at a temperature of 0°C and below.
-      - packages/tion_enable_antifreeze.yaml
+      - packages/tion/enable_antifreeze.yaml
       ## Common configuration settings. Do not comment or move or remove!
       - packages/base.yaml
       ## Base platform support package:
-      ## esp32_s3_ble.yaml - ESP32-S3
-      ## esp32_c3_ble.yaml - ESP32-C3
-      ## esp32_c6_ble.yaml - ESP32-C6
-      ## esp32_ble.yaml - ESP32
+      ##   esp32_ble.yaml    - ESP32
+      ##   esp32_s3_ble.yaml - ESP32-S3
+      ##   esp32_c3_ble.yaml - ESP32-C3
+      ##   esp32_c6_ble.yaml - ESP32-C6
       - packages/esp32_ble.yaml
+      ## Enable automatic fan speed management with CO2 sensor.
+      # - packages/tion/auto_co2.yaml
+      ## Enable additional entities to auto_co2 configuration.
+      # - packages/tion/auto_co2_config.yaml
+      ## If you have problems with BLE connection, try to use different ESP-IDF framework.
+      # - packages/esp-idf/4.4.7.yaml
       ## Persistent connection runtime control switch.
-      # - packages/persistent.yaml
+      # - packages/tion/persistent.yaml
       ## Additional connect switch useful for debugging.
-      # - packages/connect.yaml
-      ## Internal ESP32 temperature sensor.
-      #- packages/esp32_temperature.yaml
-      ## Uncomment to use it with SprutHub.
-      # - packages/spruthub.yaml
-      ## Uncomment to use MQTT. Already included with spruthub.yaml
+      # - packages/common/ble_connect.yaml
+      ## Uncomment to use MQTT.
       # - packages/mqtt.yaml
+      ## Uncomment to use it with SprutHub. Must be right after mqtt.yaml.
+      # - packages/spruthub.yaml
       ## Lilygo T-Dongle S3 support package.
-      # - packages/lilygo.yaml
+      # - packages/board/lilygo.yaml
       ## XIAO SEEED ESP32-C6 support package.
-      # - packages/seeed_c6.yaml
-      ## Web server support.
-      #- packages/web_server.yaml
+      # - packages/board/seeed_c6.yaml
       ## Additional debug information.
       # - packages/debug.yaml
       ## Tion type package. Do not comment or move or remove!
-      - packages/tion_3s.yaml
+      - packages/tion/3s.yaml
 
 ## Uncomment to enable MQTT connection and remove api section.
 ## Do not forget to uncomment mqtt.yaml or if you plan to use SprutHub spruthub.yaml package above.
 # mqtt:
-#   broker: !secret mqtt_broker
-#   port: !secret mqtt_port
+#    broker: !secret mqtt_broker
+#    port: !secret mqtt_port
 #   username: !secret mqtt_username
 #   password: !secret mqtt_password
 
 ## Enable Home Assistant API connection.
 ## It is strongly recommended to remove if you use MQTT!!!
-api:
+# api:
   ## Uncomment next line if you do not use Home Assistant.
   #reboot_timeout: 0s
 
@@ -127,6 +132,11 @@ tion:
   force_update: false
   ## Optional, Periodically saves current state and restores it of power loss. Default: false.
   restore_state: false
+  ## Uncomment to enable automatic co2 fan speed management.
+  ## Also required uncommented tion/auto_co2.yaml and tion/auto_co2_config.yaml.
+  ## Please find example of co2 sensor by searching co2_value in this file.
+  # auto:
+  #   co2: co2_value # this is not an id from HA but id from your sensor in this config
 
   ## Optional, Enable presets. Default: <empty> (no presets)
   ## You can define any number of presets with any name.
@@ -193,6 +203,34 @@ sensor:
     id: tion_boost_time_left
     type: boost_time_left
     name: Boost Time Left
+  ## Example of sensor from Home Assistant.
+  #- platform: homeassistant
+  #  id: co2_value
+  #  entity_id: sensor.bedroom_air_monitor_co2
+  ## Example of sensor from MQTT broker.
+  #- platform: mqtt_subscribe
+  #  id: co2_value
+  #  topic: the/topic
+  ## Example of fake co2 constant value sensor.
+  # - platform: template
+  #   id: co2_value
+  #   lambda: return 800;
+  ## Additional entities
+  - { platform: tion, name: None, type: fan_speed }
+  - { platform: tion, name: None, type: current_temperature }
+  - { platform: tion, name: None, type: target_temperature }
+  - { platform: tion, name: None, type: power }
+  - { platform: tion, name: None, type: heater_var }
+  - { platform: tion, name: None, type: fan_power }
+  - { platform: tion, name: None, type: airflow }
+  - { platform: tion, name: None, type: filter_time_left }
+  - { platform: tion, name: None, type: work_time }
+  - { platform: tion, name: None, type: work_time_days }
+  - { platform: tion, name: None, type: fan_time }
+  - { platform: tion, name: None, type: fan_time_days }
+  - { platform: tion, name: None, type: airflow_counter }
+  - { platform: tion, name: None, type: pcb_ctl_temperature }
+  - { platform: tion, name: None, type: pcb_pwr_temperature }
 
 switch:
   ## Buzzer control switch.
@@ -210,6 +248,10 @@ switch:
     ## Optional, Target heater temperature state when boost enabled.
     ##           If not set or set to 0 - current target temperature will be used.
     #temperature: 10
+  ## Additional entities
+  - { platform: tion, name: None, type: power }
+  - { platform: tion, name: None, type: heater }
+  - { platform: tion, name: None, type: auto }
 
 number:
   ## Configure boost time.
@@ -219,6 +261,9 @@ number:
     name: Boost Time
     initial_value: 20min
     restore_value: true
+  ## Additional entities
+  - { platform: tion, name: None, type: fan_speed }
+  - { platform: tion, name: None, type: target_temperature }
 
 select:
   ## Optional, Air Intake control.
@@ -238,6 +283,15 @@ binary_sensor:
     id: tion_filter_worn_out
     type: filter
     name: Filter Worn Out
+  ## Additional entities
+  - { platform: tion, name: None, type: power }
+  - { platform: tion, name: None, type: heater }
+  - { platform: tion, name: None, type: heating }
+  - { platform: tion, name: None, type: sound }
+  - { platform: tion, name: None, type: led }
+  - { platform: tion, name: None, type: gate_error }
+  - { platform: tion, name: None, type: error }
+  - { platform: tion, name: None, type: boost }
 
 text_sensor:
   ## Tion firmware version.
@@ -251,6 +305,8 @@ text_sensor:
     id: tion_errors
     type: errors
     name: Errors
+  ## Additional entities
+  - { platform: tion, name: None, type: hardware_version }
 
 button:
   ## Reset filter button.
@@ -278,3 +334,6 @@ button:
   #     lambda: id(tion_ble_vport).reset_pair();
   #   entity_category: config
 
+  ## Additional entities
+fan:
+  - { platform: tion, name: None }

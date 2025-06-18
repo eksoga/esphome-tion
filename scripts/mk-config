@@ -18,11 +18,14 @@ for br in "${types[@]}" ; do
   fi
   ofn=$prj_path/$ofn
   echo "Generating tion-$type config for $port connection..."
-  jinja2 $j2_vars -D port=$port -D type=$type -o $dfn $tfn $prj_path/scripts/j2_vars.yaml
+  # jinja2 $j2_vars -D port=$port -D type=$type -o $dfn $tfn $prj_path/scripts/j2_vars.yaml
+  $prj_path/scripts/mk-config.py $j2_vars -D is_prod=true -D port=$port -D type=$type $prj_path/scripts/j2_vars.yaml >$dfn
   if [ "$2" == "diff" ]; then
     diff $dfn $ofn
     rm $dfn
   fi
+  $prj_path/scripts/mk-config.py $j2_vars -D port=$port -D type=$type -D project_source=../components \
+    $prj_path/scripts/j2_vars.yaml >configs/gen-tion-$br-dev.yaml
 done
 
 for f in $prj_path/packages/*.j2 ; do

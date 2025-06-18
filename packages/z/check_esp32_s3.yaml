@@ -1,0 +1,5 @@
+declaration:
+  - lambda: |-
+      #ifndef TION_PKG_ESP32_S3_INCLUDED
+        #error esp32_s3_[uart|ble].yaml was not included
+      #endif

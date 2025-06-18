@@ -1,30 +1,10 @@
 substitutions:
-  tion_conn: ble
+  # Board definition
   board: esp32dev
-  board_code: $board
 
 packages:
-  # pin the esp-idf framework to 4.4.7
-  pin_esp_idf: !include esp-idf-4.4.7.yaml
+  tion.esp32_ble: !include z/esp32_ble.yaml
 
-esp32:
-  board: $board
-
-logger:
-  logs:
-    esp-idf: INFO
-
-esp32_ble_tracker:
-  id: tion_esp32_ble_tracker
-
-ble_client:
-  - mac_address: $tion_mac_address
-    id: tion_ble_client
-
-ota:
-  - id: !extend esphome_ota
-    platform: esphome
-    on_begin:
-      then:
-        lambda: |-
-          id(tion_ble_client).set_enabled(false);
+declaration:
+  - lambda: |-
+      #define TION_PKG_ESP32_INCLUDED

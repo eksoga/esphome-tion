@@ -1,0 +1,5 @@
+declaration:
+  - lambda: |-
+      #ifndef TION_PKG_ESP32_S2_INCLUDED
+        #error esp32_s2_uart.yaml was not included
+      #endif

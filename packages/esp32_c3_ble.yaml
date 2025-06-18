@@ -1,8 +1,9 @@
 substitutions:
+  # Board definition
   board: esp32-c3-devkitm-1
 
 packages:
-  tion.esp32_ble: !include esp32_ble.yaml
+  tion.esp32_ble: !include z/esp32_ble.yaml
 
 esphome:
   platformio_options:
@@ -14,3 +15,7 @@ esp32_ble:
 wifi:
   on_connect:
     - ble.enable
+
+declaration:
+  - lambda: |-
+      #define TION_PKG_ESP32_C3_INCLUDED

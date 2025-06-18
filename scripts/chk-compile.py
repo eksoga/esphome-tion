@@ -15,7 +15,7 @@ CONFIG_PATH = "./configs"
 @click.option(
     "--types",
     "-t",
-    default="lt-ble 4s-ble 4s-uart 3s-ble 3s-uart o2-uart",
+    default="lt-ble lt-uart 4s-ble 4s-uart 3s-ble 3s-uart o2-uart",
     show_default=True,
 )
 def main(version: str, clean: bool, dev: bool, verbose: int, types: str):

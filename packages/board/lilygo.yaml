@@ -1,16 +1,20 @@
 substitutions:
+  board: esp32-s3-devkitc-1
   board_code: lilygo-t-dongle-s3
   board_name: LilyGo T-Dongle-S3
-  tx_pin: GPIO20
-  rx_pin: GPIO19
+  # Tion UART
+  tx_pin: $usb_dp_pin
+  rx_pin: $usb_dm_pin
+
+packages:
+  # перенаправим лог на QWIIC-коннектор. подключение: GND ближе к USB-порту, TX через один.
+  z.logger_uart: !include ../z/logger_uart.yaml
+  z.package_check: !include ../z/check_esp32_s3.yaml
 
 esp32:
   flash_size: 16MB
 
 logger:
-  # перенаправим лог на QWIIC-коннектор. подключение: GND ближе к USB-порту, TX через один.
-  baud_rate: 115200
-  hardware_uart: UART0
   logs:
     light: INFO
     spi_led_strip: INFO

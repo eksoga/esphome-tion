@@ -1,16 +1,20 @@
 substitutions:
+  # Board definition
   board: lolin_s2_mini
-  tx_pin: GPIO20
-  rx_pin: GPIO19
+  # UART0
+  u0txd_pin: GPIO43
+  u0rxd_pin: GPIO44
+  # UART1
+  u1txd_pin: GPIO17
+  u1rxd_pin: GPIO18
+  # USB
+  usb_dm_pin: GPIO19
+  usb_dp_pin: GPIO20
 
 packages:
-  tion.esp32_uart: !include esp32_uart.yaml
+  tion.esp32_uart: !include z/esp32_uart.yaml
+  z.logger_cdc: !include z/logger_cdc.yaml
 
-esphome:
-  platformio_options:
-    board_build.flash_mode: dio
-
-logger:
-  # Switch USB from CDC
-  hardware_uart: UART0
-
+declaration:
+  - lambda: |-
+      #define TION_PKG_ESP32_S2_INCLUDED

@@ -1,0 +1,32 @@
+# this package is internal. do not use it directly!
+# required at least led_pin substitution defined.
+substitutions:
+  led_pin_inverted: "false"
+  led_pin_ignore_strapping_warning: "false"
+
+logger:
+  logs:
+    light: INFO
+    status_led: INFO
+
+light:
+  - platform: status_led
+    id: z_status_led
+    name: Onboard LED
+    icon: mdi:led-on
+    internal: true
+    entity_category: diagnostic
+    pin:
+      number: $led_pin
+      inverted: $led_pin_inverted
+      ignore_strapping_warning: $led_pin_ignore_strapping_warning
+    effects:
+      - strobe:
+          name: "fast_pulse"
+          colors:
+            - state: true
+              duration: 0.1s
+            - state: false
+              duration: 0.1s
+
+
