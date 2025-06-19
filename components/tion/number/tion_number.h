@@ -71,7 +71,7 @@ template<class C> class TionNumber : public number::Number, public Component, pu
 
     this->parent_->add_on_state_callback([this](const TionState *state) {
       if (!PC::publish_state(this, state)) {
-        this->has_state_ = false;
+        this->set_has_state(false);
       }
     });
   }

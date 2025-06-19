@@ -54,7 +54,7 @@ template<class C> class TionSelect : public select::Select, public Component, pu
           this->internal_publish_state_(C::get(*state, this->traits.get_options()));
         }
       } else {
-        this->has_state_ = false;
+        this->set_has_state(false);
       }
     });
   }

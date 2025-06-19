@@ -15,7 +15,10 @@ class TionClimate : public climate::Climate, public Component, public Parented<T
   using TionState = dentra::tion::TionState;
 
  public:
-  explicit TionClimate(TionApiComponent *api) : Parented(api) {}
+  explicit TionClimate(TionApiComponent *api) : Parented(api) {
+    this->enable_heat_cool_ = false;
+    this->enable_fan_auto_ = false;
+  }
 
   float get_setup_priority() const override { return setup_priority::AFTER_WIFI; }
   void dump_config() override;
@@ -28,8 +31,10 @@ class TionClimate : public climate::Climate, public Component, public Parented<T
   void set_enable_fan_auto(bool enable_fan_auto) { this->enable_fan_auto_ = enable_fan_auto; }
 
  protected:
-  bool enable_heat_cool_{};
-  bool enable_fan_auto_{};
+  struct {
+    bool enable_heat_cool_ : 1;
+    bool enable_fan_auto_ : 1;
+  };
   void on_state_(const TionState &state);
   // важно this->mode уже должен быть выставлен в актуальное значение
   bool set_fan_speed_(const TionState &state);

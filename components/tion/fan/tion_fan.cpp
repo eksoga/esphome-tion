@@ -13,7 +13,10 @@ void TionFan::setup() {
 
   this->parent_->add_on_state_callback([this](const TionState *state) {
     if (state) {
+      this->set_has_state(true);
       this->on_state_(*state);
+    } else {
+      this->set_has_state(false);
     }
   });
 }

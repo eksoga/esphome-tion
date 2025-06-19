@@ -42,18 +42,14 @@ template<class C> class TionSwitch : public switch_::Switch, public Component, p
       return;
     }
     this->parent_->add_on_state_callback(
-        [this](const TionState *state) { this->has_state_ = PC::publish_state(this, state); });
+        [this](const TionState *state) { this->set_has_state(PC::publish_state(this, state)); });
   }
 
   bool assumed_state() override { return this->is_failed(); }
 
-  bool has_state() const { return this->has_state_; }
-
   dentra::tion::TionApiBase *api() const { return this->parent_->api(); }
 
  protected:
-  bool has_state_{};
-
   void write_state(bool state) override { PC::control(this, state); }
 };
 
