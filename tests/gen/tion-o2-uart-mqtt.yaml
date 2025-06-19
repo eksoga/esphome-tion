@@ -1,91 +1,56 @@
-{%- if (port|length) == 0 or (type|length) == 0 %}{{ ("port or type not defined")|raise}}{% endif -%}
 substitutions:
-  {%- if port == "ble" %}
-  ## Tion mac address. Setup yours.
-  tion_mac_address: 00:00:00:00:00:00
-  {%- endif %}
   ## Name of the node. Don't use underscores!
   ## https://esphome.io/guides/faq.html#why-shouldn-t-i-use-underscores-in-my-device-name
-  {%- if is_prod %}
-  node_name: tion-{{ "lite" if type == "lt" else type }}
-  {%- else %}
-  node_name: test-{{ type }}-{{ port }}-{{ conn }}
-    {%- if platform %}-{{ platform }}{% endif %}
-    {%- if board %}-{{ board }}{% endif %}
-  {% endif %}
+  node_name: test-o2-uart-mqtt
+  
   ## Name for the main entity and prefix for all others.
   friendly_name: $node_name
 
-  {%- if type in ["3s", "o2", "lt"] and port == "uart" %}
-
   ## UART configuration.
   ## !!! Make sure to use YOUR pins or remove if you are using board specific package.
-  tx_pin: {{ "GPIO19" if type == "o2" else "TX" }}
-  rx_pin: {{ "GPIO20" if type == "o2" else "RX" }}
-  {%- endif %}
-  {%- if type == "3s" and port == "uart" %}
-  ## UART proxy configuration (optional). Works with tion_3s_proxy.yaml.
-  ## Make sure to use YOUR pins!
-  proxy_tx_pin: GPIO15
-  proxy_rx_pin: GPIO13
-  {%- endif %}
+  tx_pin: GPIO19
+  rx_pin: GPIO20
 
   ## WiFi settings.
   wifi_ssid: !secret wifi_ssid
   wifi_password: !secret wifi_password
   ## WiFi Access Point password.
-  wifi_ap_password: tion-0123-{{ type }}
-
-  {%- if (project_source|length) > 0  %}
-  project_source: {{ project_source }}
-  {%- endif %}
-  {%- if (project_branch|length) > 0  %}
-  project_branch: {{ project_branch }}
-  {%- endif %}
-  {%- if (project_version|length) > 0 %}
-  project_version: {{ project_version }}
-  {%- endif %}
-  {%- if version_tion == "next"%}
+  wifi_ap_password: tion-0123-o2
+  project_source: ../../components
 
   project_source_refresh: 0s
-  {%- endif %}
 
 packages:
-{%- if is_prod %}
-  tion:
-    {%- if (packages_refresh|length) > 0 or version_tion == "next" %}
-    refresh: 0s
-    {%- endif %}
-    url: https://github.com/dentra/esphome-tion
-    ref: {{ version_tion }} # cant use substitutions here
-    files:
-      ## You can enable or disable some of the features listed below.
-      ## The disabled feature starts with # symbol.
-      ## The indentation before uncommented package is very important!
-      {{ "" }}
-      {%- for key, value in packages.items() %}
-      {%- for comment in value.comment.split("\n") %}
-      ## {{ comment }}
-      {%- endfor %}
-      {{ "" if value.enabled else "# " }}- packages/{{ key }}.yaml
-      {%- endfor %}
-{%- else %}
-  {%- for key, value in packages.items() %}
-  {{ "" if value.enabled else "# " }}{{ key }}: !include ../../packages/{{ key }}.yaml
-  {%- endfor %}
-{%- endif %}
+  common/wifi_signal: !include ../../packages/common/wifi_signal.yaml
+  common/uptime: !include ../../packages/common/uptime.yaml
+  common/restart: !include ../../packages/common/restart.yaml
+  common/esp32_temperature: !include ../../packages/common/esp32_temperature.yaml
+  common/web_server: !include ../../packages/common/web_server.yaml
+  # tion/temperature30c: !include ../../packages/tion/temperature30c.yaml
+  tion/energy: !include ../../packages/tion/energy.yaml
+  tion/enable_antifreeze: !include ../../packages/tion/enable_antifreeze.yaml
+  base: !include ../../packages/base.yaml
+  esp32_s3_uart: !include ../../packages/esp32_s3_uart.yaml
+  tion/auto_co2: !include ../../packages/tion/auto_co2.yaml
+  tion/auto_co2_config: !include ../../packages/tion/auto_co2_config.yaml
+  mqtt: !include ../../packages/mqtt.yaml
+  # spruthub: !include ../../packages/spruthub.yaml
+  # board/lilygo: !include ../../packages/board/lilygo.yaml
+  # board/seeed_c6: !include ../../packages/board/seeed_c6.yaml
+  # debug: !include ../../packages/debug.yaml
+  tion/o2: !include ../../packages/tion/o2.yaml
 
 ## Uncomment to enable MQTT connection and remove api section.
 ## Do not forget to uncomment mqtt.yaml or if you plan to use SprutHub spruthub.yaml package above.
-{{ "" if conn == "mqtt" else "# " }}mqtt:
-{{ "" if conn == "mqtt" else "# " }}   broker: !secret mqtt_broker
-{{ "" if conn == "mqtt" else "# " }}   port: !secret mqtt_port
+mqtt:
+   broker: !secret mqtt_broker
+   port: !secret mqtt_port
 #   username: !secret mqtt_username
 #   password: !secret mqtt_password
 
 ## Enable Home Assistant API connection.
 ## It is strongly recommended to remove if you use MQTT!!!
-{{ "" if conn == "api" else "# " }}api:
+# api:
   ## Uncomment next line if you do not use Home Assistant.
   #reboot_timeout: 0s
 
@@ -102,64 +67,36 @@ wifi:
 
 ## Virtual port configuration.
 vport:
-  - platform: tion_{{ type }}_{{port}}
-    id: tion_{{ port }}_vport
-    {%- if port == "ble" %}
-    ble_client_id: tion_{{ port }}_client
-    ## Optional, Do not disconnect after receiving state. Default: false.
-    ## You can enable persistent.yaml package to control it at runtime.
-    persistent_connection: false
-    ## Optional, Allow to disable other BLE device scanning when breezer is already connected. Default: false.
-    # disable_scan: false
-    {%- else %}
+  - platform: tion_o2_uart
+    id: tion_uart_vport
     uart_id: tion_uart
-    {%- endif %}
-    {%- if type == "3s" and port == "ble" %}
-    ## Optional, Send a pair command after every connect (experimental feature)
-    # experimental_always_pair: false
-    {%- endif %}
     ## Optional, Interval between sending commands. Set to 0ms to send one command per loop.
-    # command_interval: {{ "100ms" if port == "ble" else "20ms" }}
+    # command_interval: 20ms
     ## Optional, Command queue size. Default: 10.
     # command_queue_size: 16
-    {%- if type == "4s" and port == "uart" %}
-    ## Optional, Interval between sending heartbeat commands. Default: 5s.
-    # heartbeat_interval: 5s
-    {%- endif %}
 
 ## Main climate component configuration.
 ## See detailed description and additional parameters at CONFIGURATION.md
 tion:
-  type: {{ type }}
+  type: o2
   id: tion_api
   ## Optional, use vport_id with multiple breezers.
-  vport_id: tion_{{ port }}_vport
+  vport_id: tion_uart_vport
   ## Optional, How often query device state. Default: 60s.
-  {%- if port == "uart" %}
-  update_interval: {{ "15s" if type == "4s" else "30s" }}
-  {%- else %}
-  update_interval: 60s
-  {%- endif %}
+  update_interval: 30s
   ## Optional, Timeout to combine update operations. Default: 200ms.
   batch_timeout: 200ms
   ## Optional, Timeout to enable state problem sensor. Must be less than update_interval. Default: 3s.
-  state_timeout: {{ "3s" if port == "uart" else "30s" }}
+  state_timeout: 3s
   ## Optional, Updates sensor values on any state response or only if they have been changed. Default: false.
   force_update: false
   ## Optional, Periodically saves current state and restores it of power loss. Default: false.
-  restore_state: {{ "false" if is_prod else "true" }}
-  {%- if type == "lt" and port == "uart" %}
-  ## Optional, Allow to completely stop the fan without closing air valve. Default: false.
-  ##   Limitations of fan off:
-  ##     - min outdoor temperature is 5°C
-  ##     - heater is off
-  enable_kiv: false
-  {%- endif %}
+  restore_state: true
   ## Uncomment to enable automatic co2 fan speed management.
   ## Also required uncommented tion/auto_co2.yaml and tion/auto_co2_config.yaml.
   ## Please find example of co2 sensor by searching co2_value in this file.
-  {{ "" if packages["tion/auto_co2"].enabled else "# " }}auto:
-  {{ "" if packages["tion/auto_co2"].enabled else "# " }}  co2: co2_value # this is not an id from HA but id from your sensor in this config
+  auto:
+    co2: co2_value # this is not an id from HA but id from your sensor in this config
 
   ## Optional, Enable presets. Default: <empty> (no presets)
   ## You can define any number of presets with any name.
@@ -171,26 +108,11 @@ tion:
   ##    temperature: 16         # remove or set to 0 to use current state
   ##    heater: False           # remove to use current state
   ##    power: True             #
-{%- if type in ["3s", "4s"] %}
-  ##    gate_position: outdoor  # remove to use current state, see below for available values
-  ## Available gate_position:
-  ##  * outdoor - set gate position to outdoor air intake (3S and 4S only)
-  ##  * indoor - set gate position to indoor air intake (3S and 4S only)
-{%- endif %}
-{%- if type == "3s" %}
-  ##  * mixed - set gate position to mixed air intake (3S only)
-{%- endif %}
   ## Uncomment next 4 lines to enable example presets.
   # presets:
   #   home: { fan_speed: 2, temperature: 16, heater: False }
   #   away: { fan_speed: 1, temperature: 10, heater: False }
   #   sleep: { fan_speed: 1, temperature: 18 }
-{%- if type == "lt" and port == "ble" %}
-  ## Optional, configure hardware button presets. Factory defaults are: 2/4/6, 10/20/25 °C
-  #button_presets:
-  #  fan_speed: [1, 3, 5]
-  #  temperature: [12, 18, 24]
-{%- endif %}
 
 ################################################################################
 ##
@@ -221,13 +143,6 @@ sensor:
     id: tion_outdoor_temperature
     type: outdoor_temperature
     name: Outdoor Temperature
-{%- if type in ["4s", "lt"] %}
-  ## Optional, Heater power, W (watt).
-  - platform: tion
-    id: tion_heater_power
-    type: heater_power
-    name: Heater power
-{%- endif %}
   ## Current productivity, m³/h (cubic meters per hour).
   - platform: tion
     id: tion_productivity
@@ -252,10 +167,9 @@ sensor:
   #  id: co2_value
   #  topic: the/topic
   ## Example of fake co2 constant value sensor.
-  {{ "" if packages["tion/auto_co2"].enabled else "# " }}- platform: template
-  {{ "" if packages["tion/auto_co2"].enabled else "# " }}  id: co2_value
-  {{ "" if packages["tion/auto_co2"].enabled else "# " }}  lambda: return 800;
-{%- if not prod %}
+  - platform: template
+    id: co2_value
+    lambda: return 800;
   ## Additional entities
   - { platform: tion, name: None, type: fan_speed }
   - { platform: tion, name: None, type: current_temperature }
@@ -272,30 +186,8 @@ sensor:
   - { platform: tion, name: None, type: airflow_counter }
   - { platform: tion, name: None, type: pcb_ctl_temperature }
   - { platform: tion, name: None, type: pcb_pwr_temperature }
-{%- endif %}
 
 switch:
-{%- if type != "o2" and not(type == "lt" and port == "uart") %}
-  ## Buzzer control switch.
-  - platform: tion
-    id: tion_buzzer
-    type: sound
-    name: Buzzer
-{%- endif %}
-{%- if type == "4s" %}
-  ## Led control switch.
-  - platform: tion
-    id: tion_led
-    type: led
-    name: Led
-{%- endif %}
-{%- if type == "4s" %}
-  ## Recirculation control switch.
-  - platform: tion
-    id: tion_recirculation
-    type: recirculation
-    name: Recirculation
-{%- endif %}
   ## Boost/Turbo switch.
   - platform: tion
     id: tion_boost
@@ -306,12 +198,10 @@ switch:
     ## Optional, Target heater temperature state when boost enabled.
     ##           If not set or set to 0 - current target temperature will be used.
     #temperature: 10
-{%- if not prod %}
   ## Additional entities
   - { platform: tion, name: None, type: power }
   - { platform: tion, name: None, type: heater }
   - { platform: tion, name: None, type: auto }
-{%- endif %}
 
 number:
   ## Configure boost time.
@@ -321,26 +211,13 @@ number:
     name: Boost Time
     initial_value: 20min
     restore_value: true
-{%- if not prod %}
   ## Additional entities
   - { platform: tion, name: None, type: fan_speed }
   - { platform: tion, name: None, type: target_temperature }
-{%- endif %}
-
-{%- if type == "3s" %}
-
-select:
-  ## Optional, Air Intake control.
-  - platform: tion
-    id: tion_air_intake
-    type: air_intake
-    name: Air Intake
-{%- elif not is_prod %}
   ## Additional entities
 select:
   - { platform: tion, name: None, type: air_intake }
   - { platform: tion, name: None, type: presets }
-{%- endif %}
 
 binary_sensor:
   ## Informs about state receiving problem from the breezer.
@@ -348,19 +225,11 @@ binary_sensor:
     id: tion_state_problem
     type: state
     name: State Problem
-{%- if type == "lt" and port == "ble" %}
-  ## Gate state control.
-  - platform: tion
-    id: tion_gate_state
-    type: gate
-    name: Gate State
-{%- endif %}
   ## Filter warning state.
   - platform: tion
     id: tion_filter_worn_out
     type: filter
     name: Filter Worn Out
-{%- if not prod %}
   ## Additional entities
   - { platform: tion, name: None, type: power }
   - { platform: tion, name: None, type: heater }
@@ -370,7 +239,6 @@ binary_sensor:
   - { platform: tion, name: None, type: gate_error }
   - { platform: tion, name: None, type: error }
   - { platform: tion, name: None, type: boost }
-{%- endif %}
 
 text_sensor:
   ## Tion firmware version.
@@ -384,53 +252,9 @@ text_sensor:
     id: tion_errors
     type: errors
     name: Errors
-{%- if not prod %}
   ## Additional entities
   - { platform: tion, name: None, type: hardware_version }
-{%- endif %}
 
-{%- if type != "o2" %}
-
-button:
-  ## Reset filter button.
-  - platform: tion
-    id: tion_reset_filter
-    type: reset_filter
-    name: Reset Filter
-    ## Reset filter confirmation. When off then reset_filter will not work.
-    ## Has no effect if spruthub.yaml if enabled and can be removed in this case.
-    confirm:
-      name: Reset Filter Confirm
-{%- endif %}
-{%- if type == "3s" and port == "ble" %}
-  - platform: template
-    id: tion_pair
-    name: Pair
-    icon: mdi:bluetooth-connect
-    on_press:
-      lambda: id(tion_{{ port }}_vport).pair();
-    entity_category: config
-  ## Uncomment next 5 lines to enable switch for enable reset pair functionality.
-  # - platform: template
-  #   id: tion_reset_pair
-  #   name: Reset Pair
-  #   icon: mdi:bluetooth-off
-  #   on_press:
-  #     lambda: id(tion_{{ port }}_vport).reset_pair();
-  #   entity_category: config
-{%- endif %}
-{#%- if type in ["4s", "lt"] %}
-## Uncomment if you plan to use reset errors/warnings functionality.
-## This feature is experimental and may partially work or not to work as expected.
-#  - platform: template
-#    id: tion_reset_errors
-#    name: "Reset Errors"
-#    on_press:
-#      - lambda: id(tion_climate).reset_errors();
-{%- endif %#}
-
-{%- if not prod %}
   ## Additional entities
 fan:
   - { platform: tion, name: None }
-{%- endif %}

@@ -18,14 +18,17 @@ for br in "${types[@]}" ; do
   fi
   ofn=$prj_path/$ofn
   echo "Generating tion-$type config for $port connection..."
-  # jinja2 $j2_vars -D port=$port -D type=$type -o $dfn $tfn $prj_path/scripts/j2_vars.yaml
-  $prj_path/scripts/mk-config.py $j2_vars -D is_prod=true -D port=$port -D type=$type $prj_path/scripts/j2_vars.yaml >$dfn
+  $prj_path/scripts/mk-config.py $j2_vars -D is_prod=true -D port=$port -D type=$type >$dfn
   if [ "$2" == "diff" ]; then
     diff $dfn $ofn
     rm $dfn
   fi
-  $prj_path/scripts/mk-config.py $j2_vars -D port=$port -D type=$type -D project_source=../components \
-    $prj_path/scripts/j2_vars.yaml >configs/gen-tion-$br-dev.yaml
+  conns=(api mqtt)
+  for conn in "${conns[@]}" ; do
+    $prj_path/scripts/mk-config.py $j2_vars \
+      -D port=$port -D type=$type -D conn=$conn -D project_source=../../components \
+      >tests/gen/tion-$br-$conn.yaml
+  done
 done
 
 for f in $prj_path/packages/*.j2 ; do
@@ -36,7 +39,7 @@ for f in $prj_path/packages/*.j2 ; do
     dfn=/tmp/$(basename $ofn)
   fi
   echo "Generating $dfn..."
-  jinja2 $j2_vars -D port=$port -D type=$type -o $dfn $tfn $prj_path/scripts/j2_vars.yaml
+  jinja2 $j2_vars -D port=$port -D type=$type -o $dfn $tfn
   if [ "$2" == "diff" ]; then
     diff $dfn $ofn
     rm $dfn

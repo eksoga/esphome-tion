@@ -18,7 +18,7 @@ fi
 ofn=$prj_path/$ofn
 tfn=$ofn.j2
 
-jinja2 $j2_vars -o $dfn $tfn $prj_path/scripts/j2_vars.yaml
+jinja2 $j2_vars -o $dfn $tfn
 
 if [ "$2" == "diff" ]; then
   diff $dfn $ofn

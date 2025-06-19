@@ -10,9 +10,10 @@ on:
 
 env:
   FORCE_COLOR: 1
-  ESPHOME_VERSION: "2025.5.1"
+  ESPHOME_VERSION: "2025.6.0"
   PYTHON_VERSION: "3.12"
   ESPHOME_DATA_DIR: ".esphome"
+  TESTS_DIR: "tests/gen"
 
 jobs:
   build:
@@ -25,20 +26,23 @@ jobs:
       fail-fast: false
       matrix:
         # run copies of the current job in parallel
-        component:
-          - tion-o2-uart
-          - tion-3s-ble
-          - tion-3s-uart
-          - tion-4s-ble
-          - tion-4s-uart
-          - tion-lt-ble
-          - tion-lt-uart
+        type:
+          - o2-uart
+          - 3s-ble
+          - 3s-uart
+          - 4s-ble
+          - 4s-uart
+          - lt-ble
+          - lt-uart
+        conn:
+          - api
+          - mqtt
     steps:
       - name: Check out code
         uses: actions/checkout@v4
       - name: Generate fake secrets.yaml
         run: |
-          echo -e "wifi_ssid: ssid\nwifi_password: password" > tests/cfg/secrets.yaml
+          echo -e "wifi_ssid: ssid\nwifi_password: password\nmqtt_broker: localhost\nmqtt_port: 1883" > ${{ env.TESTS_DIR }}/secrets.yaml
       - name: Register problem matchers
         run: |
           echo "::add-matcher::.github/workflows/matchers/clang-tidy.json"
@@ -48,11 +52,11 @@ jobs:
         id: esphome
         with:
           version: ${{ env.ESPHOME_VERSION }}
-          config: tests/cfg/${{ matrix.component }}.yaml
+          config: ${{ env.TESTS_DIR }}/tion-${{ matrix.type }}-${{ matrix.conn }}.yaml
           substitutions: |
             {
               "project_version": "test",
-              "project_name": "${{ matrix.component }}",
+              "project_name": "${{ matrix.type }}-${{ matrix.conn }}",
               "project_source": "../../components",
               "project_branch": "${{ github.ref_name }}"
             }

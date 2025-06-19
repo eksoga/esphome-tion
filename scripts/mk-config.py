@@ -9,28 +9,29 @@ CFG_TPL = "configs/tion.yaml.j2"
 
 
 @click.command()
-@click.argument("vars_yaml")
 @click.option("--verbose", "-v", count=True)
 @click.option("--define", "-D", multiple=True)
-def main(vars_yaml, verbose: int, define: tuple[str]):
-    defines = {}
+def main(verbose: int, define: tuple[str]):
+    defines: dict[str, str] = {}
     for d in define:
-        a = d.split("=")
-        defines[a[0].strip()] = a[1].strip()
+        k, v = d.split("=")
+        defines[k.strip()] = v.strip()
 
-    with open(vars_yaml, "r") as file:
-        vars = yaml.safe_load(file)
+    if "enabled_packages" in defines:
+        defines["enabled_packages"] = [
+            item.strip() for item in defines["enabled_packages"].split(",")
+        ]
 
     env = jinja2.Environment(loader=jinja2.FileSystemLoader("."))
     template = env.get_template(PKG_TPL)
-    packages = template.render(**vars, **defines)
+    packages = template.render(**defines)
     packages = yaml.safe_load(packages)
-    for pkg in packages.values():
-        if "enabled" not in pkg:
+    for key, pkg in packages.items():
+        if "enabled" not in pkg or key in defines.get("enabled_packages", []):
             pkg["enabled"] = True
 
     template = env.get_template(CFG_TPL)
-    rendered = template.render(packages=packages, **vars, **defines)
+    rendered = template.render(packages=packages, **defines)
     print(rendered)
 
 
