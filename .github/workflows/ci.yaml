@@ -57,7 +57,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
   build:
     if: startsWith(github.server_url, 'https://github.com')
-    needs: tests
+    # needs: tests
     runs-on: ubuntu-latest
     outputs:
       firmware-path: ${{ steps.esphome.outputs.firmware-path }}
