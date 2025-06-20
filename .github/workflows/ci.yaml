@@ -14,29 +14,23 @@ env:
   PYTHON_VERSION: "3.12"
   ESPHOME_DATA_DIR: ".esphome"
   TESTS_DIR: "tests/gen"
+  BUILD_DIR: "configs"
 
 jobs:
-  build:
+  tests:
     if: startsWith(github.server_url, 'https://github.com')
     runs-on: ubuntu-latest
-    outputs:
-      firmware-path: ${{ steps.esphome.outputs.firmware-path }}
     strategy:
       # don't fail the entire matrix on failure
       fail-fast: false
       matrix:
         # run copies of the current job in parallel
-        type:
-          - o2-uart
-          - 3s-ble
-          - 3s-uart
-          - 4s-ble
-          - 4s-uart
-          - lt-ble
-          - lt-uart
-        conn:
-          - api
-          - mqtt
+        type: [4s, 3s, lt, o2]
+        port: [uart, ble]
+        conn: [api, mqtt]
+        exclude:
+          - type: o2
+            port: ble
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -52,12 +46,52 @@ jobs:
         id: esphome
         with:
           version: ${{ env.ESPHOME_VERSION }}
-          config: ${{ env.TESTS_DIR }}/tion-${{ matrix.type }}-${{ matrix.conn }}.yaml
+          config: ${{ env.TESTS_DIR }}/tion-${{ matrix.type }}-${{ matrix.port }}-${{ matrix.conn }}.yaml
           substitutions: |
             {
               "project_version": "test",
-              "project_name": "${{ matrix.type }}-${{ matrix.conn }}",
+              "project_name": "${{ matrix.type }}-${{ matrix.port }}-${{ matrix.conn }}",
               "project_source": "../../components",
+              "project_branch": "${{ github.ref_name }}"
+            }
+          python-version: ${{ env.PYTHON_VERSION }}
+  build:
+    if: startsWith(github.server_url, 'https://github.com')
+    needs: tests
+    runs-on: ubuntu-latest
+    outputs:
+      firmware-path: ${{ steps.esphome.outputs.firmware-path }}
+    strategy:
+      # don't fail the entire matrix on failure
+      fail-fast: false
+      matrix:
+        # run copies of the current job in parallel
+        type: [4s, 3s, lt, o2]
+        port: [uart, ble]
+        exclude:
+          - type: o2
+            port: ble
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Generate fake secrets.yaml
+        run: |
+          echo -e "wifi_ssid: ssid\nwifi_password: password\nmqtt_broker: localhost\nmqtt_port: 1883" > ${{ env.BUILD_DIR }}/secrets.yaml
+      - name: Register problem matchers
+        run: |
+          echo "::add-matcher::.github/workflows/matchers/clang-tidy.json"
+          echo "::add-matcher::.github/workflows/matchers/gcc.json"
+      - name: Build project
+        uses: dentra/esphome-action@main
+        id: esphome
+        with:
+          version: ${{ env.ESPHOME_VERSION }}
+          config: ${{ env.BUILD_DIR }}/tion-${{ matrix.type }}-${{ matrix.port }}.yaml
+          substitutions: |
+            {
+              "project_version": "test",
+              "project_name": "${{ matrix.type }}-${{ matrix.port }}",
+              "project_source": "../components",
               "project_branch": "${{ github.ref_name }}"
             }
           python-version: ${{ env.PYTHON_VERSION }}
