@@ -3,6 +3,19 @@ name: ci
 on:
   push:
     branches: [next]
+    paths-ignore:
+      - .devcontainer/**
+      - .vscode/**
+      - .clang-*
+      - .editorconfig
+      - .gitignore
+      - .prettierrc
+      - CMakeLists.txt
+      - CONFIGURATION.*
+      - LICENSE
+      - pylintrc
+      - README.*
+      - sdkconfig.defaults
   pull_request:
   schedule:
     # Once per week on wednesday
