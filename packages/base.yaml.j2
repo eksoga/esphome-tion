@@ -70,5 +70,9 @@ declaration:
       #endif
   - lambda: |-
       #if defined(USE_API) && defined(USE_MQTT) && !defined(TION_SKIP_CONNECTION_CHECK)
-        #error Do not use "mqtt:" and "api:" sections together or define TION_SKIP_CONNECTION_CHECK
+        #error Do not use "api:" and "mqtt:" sections together or define TION_SKIP_CONNECTION_CHECK
+      #endif
+  - lambda: |-
+      #if !defined(USE_API) && !defined(USE_MQTT) && !defined(TION_SKIP_CONNECTION_CHECK)
+        #error Please use "api:" or "mqtt:" section or define TION_SKIP_CONNECTION_CHECK
       #endif
