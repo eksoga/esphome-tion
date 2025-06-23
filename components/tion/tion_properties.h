@@ -192,8 +192,6 @@ struct Filter {
 };
 
 struct GateError {
-  static bool is_supported(TionApiComponent *c) { return c->traits().supports_gate_error; }
-
   static bool get(const TionState &state) { return state.gate_error_state; }
 };
 

@@ -141,7 +141,7 @@ bool TionState::is_heating(const TionTraits &traits) const {
 }
 
 const char *TionState::get_gate_position_str(const TionTraits &traits) const {
-  if (traits.supports_gate_error && this->gate_error_state) {
+  if (this->gate_error_state) {
     return "error";
   }
   if (traits.supports_gate_position_change_mixed) {

@@ -29,7 +29,6 @@ struct TionTraits {
     bool supports_work_time : 1;
     bool supports_fan_time : 1;
     bool supports_airflow_counter : 1;
-    bool supports_gate_error : 1;
     bool supports_pcb_ctl_temperature : 1;
     bool supports_pcb_pwr_temperature : 1;
     // true means manual antifreeze support

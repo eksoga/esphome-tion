@@ -311,7 +311,6 @@ TionO2Api::TionO2Api() : TionApiBase() {
   this->traits_.errors_report = tiono2_state_t::report_errors;
 
   this->traits_.supports_work_time = true;
-  this->traits_.supports_gate_error = true;
 #ifdef TION_ENABLE_ANTIFREEZE
   this->traits_.supports_manual_antifreeze = true;
 #endif
