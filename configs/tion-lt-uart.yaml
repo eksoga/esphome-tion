@@ -79,7 +79,7 @@ packages:
 
 ## Enable Home Assistant API connection.
 ## It is strongly recommended to remove if you use MQTT!!!
-# api:
+api:
   ## Uncomment next line if you do not use Home Assistant.
   #reboot_timeout: 0s
 

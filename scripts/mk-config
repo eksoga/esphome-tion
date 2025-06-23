@@ -18,7 +18,7 @@ for br in "${types[@]}" ; do
   fi
   ofn=$prj_path/$ofn
   echo "Generating tion-$type config for $port connection..."
-  $prj_path/scripts/mk-config.py $j2_vars -D is_prod=true -D port=$port -D type=$type >$dfn
+  $prj_path/scripts/mk-config.py $j2_vars -D is_prod=true -D port=$port -D type=$type -D conn=api >$dfn
   if [ "$2" == "diff" ]; then
     diff $dfn $ofn
     rm $dfn
