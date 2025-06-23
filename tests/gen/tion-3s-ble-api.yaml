@@ -182,7 +182,7 @@ sensor:
   - platform: template
     id: co2_value
     lambda: return 800;
-  ## Additional entities
+  ## Additional test-only entities
   - { platform: tion, name: None, type: fan_speed }
   - { platform: tion, name: None, type: current_temperature }
   - { platform: tion, name: None, type: target_temperature }
@@ -215,7 +215,7 @@ switch:
     ## Optional, Target heater temperature state when boost enabled.
     ##           If not set or set to 0 - current target temperature will be used.
     #temperature: 10
-  ## Additional entities
+  ## Additional test-only entities
   - { platform: tion, name: None, type: power }
   - { platform: tion, name: None, type: heater }
   - { platform: tion, name: None, type: auto }
@@ -228,7 +228,7 @@ number:
     name: Boost Time
     initial_value: 20min
     restore_value: true
-  ## Additional entities
+  ## Additional test-only entities
   - { platform: tion, name: None, type: fan_speed }
   - { platform: tion, name: None, type: target_temperature }
 
@@ -250,7 +250,7 @@ binary_sensor:
     id: tion_filter_worn_out
     type: filter
     name: Filter Worn Out
-  ## Additional entities
+  ## Additional test-only entities
   - { platform: tion, name: None, type: power }
   - { platform: tion, name: None, type: heater }
   - { platform: tion, name: None, type: heating }
@@ -272,7 +272,7 @@ text_sensor:
     id: tion_errors
     type: errors
     name: Errors
-  ## Additional entities
+  ## Additional test-only entities
   - { platform: tion, name: None, type: hardware_version }
 
 button:
@@ -301,6 +301,6 @@ button:
   #     lambda: id(tion_ble_vport).reset_pair();
   #   entity_category: config
 
-  ## Additional entities
+  ## Additional test-only entities
 fan:
   - { platform: tion, name: None }

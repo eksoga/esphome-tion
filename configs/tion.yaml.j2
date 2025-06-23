@@ -255,8 +255,8 @@ sensor:
   {{ "" if packages["tion/auto_co2"].enabled else "# " }}- platform: template
   {{ "" if packages["tion/auto_co2"].enabled else "# " }}  id: co2_value
   {{ "" if packages["tion/auto_co2"].enabled else "# " }}  lambda: return 800;
-{%- if not prod %}
-  ## Additional entities
+{%- if not is_prod %}
+  ## Additional test-only entities
   - { platform: tion, name: None, type: fan_speed }
   - { platform: tion, name: None, type: current_temperature }
   - { platform: tion, name: None, type: target_temperature }
@@ -306,8 +306,8 @@ switch:
     ## Optional, Target heater temperature state when boost enabled.
     ##           If not set or set to 0 - current target temperature will be used.
     #temperature: 10
-{%- if not prod %}
-  ## Additional entities
+{%- if not is_prod %}
+  ## Additional test-only entities
   - { platform: tion, name: None, type: power }
   - { platform: tion, name: None, type: heater }
   - { platform: tion, name: None, type: auto }
@@ -321,8 +321,8 @@ number:
     name: Boost Time
     initial_value: 20min
     restore_value: true
-{%- if not prod %}
-  ## Additional entities
+{%- if not is_prod %}
+  ## Additional test-only entities
   - { platform: tion, name: None, type: fan_speed }
   - { platform: tion, name: None, type: target_temperature }
 {%- endif %}
@@ -336,7 +336,7 @@ select:
     type: air_intake
     name: Air Intake
 {%- elif not is_prod %}
-  ## Additional entities
+  ## Additional test-only entities
 select:
   - { platform: tion, name: None, type: air_intake }
   - { platform: tion, name: None, type: presets }
@@ -360,8 +360,8 @@ binary_sensor:
     id: tion_filter_worn_out
     type: filter
     name: Filter Worn Out
-{%- if not prod %}
-  ## Additional entities
+{%- if not is_prod %}
+  ## Additional test-only entities
   - { platform: tion, name: None, type: power }
   - { platform: tion, name: None, type: heater }
   - { platform: tion, name: None, type: heating }
@@ -384,8 +384,8 @@ text_sensor:
     id: tion_errors
     type: errors
     name: Errors
-{%- if not prod %}
-  ## Additional entities
+{%- if not is_prod %}
+  ## Additional test-only entities
   - { platform: tion, name: None, type: hardware_version }
 {%- endif %}
 
@@ -429,8 +429,8 @@ button:
 #      - lambda: id(tion_climate).reset_errors();
 {%- endif %#}
 
-{%- if not prod %}
-  ## Additional entities
+{%- if not is_prod %}
+  ## Additional test-only entities
 fan:
   - { platform: tion, name: None }
 {%- endif %}
