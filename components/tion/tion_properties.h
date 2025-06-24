@@ -539,10 +539,10 @@ struct Presets {
 
 struct FanSpeed {
   static std::vector<std::string> get_options(TionApiComponent *c) {
-    auto max_fan_speed = number::FanSpeed::get_max(c);
+    auto max_fan_speed = number::FanSpeed::get_max(c) + 1;  // plus zero speed
     std::vector<std::string> result(max_fan_speed);
     for (uint8_t i = 0; i < max_fan_speed; i++) {
-      result.push_back(get_(i));
+      result[i] = get_(i);
     }
     return result;
   };
