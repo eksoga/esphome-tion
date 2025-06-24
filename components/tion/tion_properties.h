@@ -537,6 +537,22 @@ struct Presets {
   }
 };
 
+struct FanSpeed {
+  static std::vector<std::string> get_options(TionApiComponent *c) {
+    auto max_fan_speed = number::FanSpeed::get_max(c);
+    std::vector<std::string> result(max_fan_speed);
+    for (uint8_t i = 0; i < max_fan_speed; i++) {
+      result.push_back(get_(i));
+    }
+    return result;
+  };
+  static std::string get_(uint8_t fan_speed) { return std::string(1, '0' + fan_speed); }
+  static std::string get(TionApiComponent *c) { return get_(number::FanSpeed::get(c->api()->get_state())); }
+  static void set(TionApiComponent *c, TionStateCall *call, const std::string &fan_mode) {
+    number::FanSpeed::set(c, call, *fan_mode.c_str() - '0');
+  }
+};
+
 }  // namespace select
 
 namespace button {

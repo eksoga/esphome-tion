@@ -247,6 +247,7 @@ number:
 select:
   - { platform: tion, name: None, type: air_intake }
   - { platform: tion, name: None, type: presets }
+  - { platform: tion, name: None, type: fan_speed }
 
 binary_sensor:
   ## Informs about state receiving problem from the breezer.

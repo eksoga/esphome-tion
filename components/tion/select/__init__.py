@@ -15,8 +15,13 @@ PC = new_pc(
         "presets": {
             CONF_ICON: cgp.ICON_TUNE,
         },
+        "fan_speed": {
+            CONF_ICON: cgp.ICON_FAN,
+        },
         # aliases
         "gate_position": "air_intake",
+        "fan": "fan_speed",
+        "speed": "fan_speed",
     }
 )
 
