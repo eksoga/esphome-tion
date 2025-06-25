@@ -14,6 +14,7 @@ number:
     initial_value: 3
     mode: slider
     entity_category: config
+    restore_value: true
   # Минимальный интервал. Минимальное время (в минутах) между изменениями
   # скорости, чтобы избежать слишком частых переключений.
   - platform: template
@@ -27,6 +28,7 @@ number:
     mode: box
     entity_category: config
     unit_of_measurement: min
+    restore_value: true
 
 # Если текущий уровень CO2 отклоняется от целевого значения (setpoint),
 # рассчитывается новая целевая скорость (new_speed) на основе следующих
