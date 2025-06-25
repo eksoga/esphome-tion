@@ -727,7 +727,8 @@ void TionApiBase::auto_update_fan_speed_() {
 bool TionApiBase::auto_update(uint16_t current, TionStateCall *call) {
   // спец обработка для обновления параметров
   if (current == 0) {
-    TION_LOGV(TAG, "Auto update settings");
+    TION_LOGD(TAG, "Auto update settings min: %u, max: %u, setpoint: %u", this->auto_min_fan_speed_,
+              this->auto_max_fan_speed_, this->auto_setpoint_);
     if (!this->auto_update_func_) {
       this->auto_pi_.reset();
     } else {
