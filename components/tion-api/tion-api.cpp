@@ -725,11 +725,13 @@ void TionApiBase::auto_update_fan_speed_() {
 }
 
 bool TionApiBase::auto_update(uint16_t current, TionStateCall *call) {
-  TION_LOGV(TAG, "Auto update to %u", current);
-  // спец обработка для сброса
+  // спец обработка для обновления параметров
   if (current == 0) {
+    TION_LOGV(TAG, "Auto update settings");
     if (!this->auto_update_func_) {
       this->auto_pi_.reset();
+    } else {
+      this->auto_update_func_(current);
     }
     return false;
   }
@@ -747,6 +749,8 @@ bool TionApiBase::auto_update(uint16_t current, TionStateCall *call) {
     INVALID_STATE_CALL();
     return false;
   }
+
+  TION_LOGV(TAG, "Auto update to %u ppm", current);
 
   uint8_t fan_speed = this->state_.fan_speed;
 
