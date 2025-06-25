@@ -130,6 +130,8 @@ climate:
     name: Climate
     ## Add HEAT_COOL mode to support turn_on without touching current heater mode.
     enable_heat_cool: True
+    ## Add addition "Automatic" fan mode. Affected only if auto enabled.
+    enable_fan_auto: True
 
 ## Example of control with a fan entity. More info at CONFIGURATION.md.
 #fan:

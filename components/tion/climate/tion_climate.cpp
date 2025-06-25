@@ -52,7 +52,7 @@ climate::ClimateTraits TionClimate::traits() {
   if (this->parent_->traits().supports_kiv) {
     traits.add_supported_fan_mode(climate::CLIMATE_FAN_OFF);
   }
-  if (this->enable_fan_auto_) {
+  if (this->enable_fan_auto_ && this->parent_->api()->auto_is_valid()) {
     traits.add_supported_fan_mode(climate::CLIMATE_FAN_AUTO);
   }
   for (uint8_t i = 1, max = i + this->parent_->traits().max_fan_speed; i < max; i++) {
