@@ -41,7 +41,11 @@ class TionBinarySensor : public binary_sensor::BinarySensor, public Component, p
     this->parent_->add_on_state_callback([this](const TionState *state) {
       if (!PC::publish_state(this, state)) {
         this->set_has_state(false);
+#if ESPHOME_VERSION_CODE < VERSION_CODE(2025, 7, 0)
         this->state_callback_.call(false);
+#else
+        this->set_state_({});
+#endif
       }
     });
   }
