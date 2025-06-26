@@ -297,8 +297,9 @@ class TionApiBase {
   /// Вызывающая сторона ответственна за вызов perform.
   /// @return true если были изменения и требуются выполнить perform
   bool auto_update(uint16_t current, TionStateCall *call);
+  void auto_reset();
   void set_auto_pi_data(float kp, float ti, int db);
-  void set_auto_setpoint(uint16_t setpoint) { this->auto_setpoint_ = setpoint; }
+  void set_auto_setpoint(uint16_t setpoint);
   void set_auto_min_fan_speed(uint8_t min_fan_speed);
   void set_auto_max_fan_speed(uint8_t max_fan_speed);
   uint16_t get_auto_setpoint() const { return this->auto_setpoint_; }

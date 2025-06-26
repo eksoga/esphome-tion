@@ -358,10 +358,6 @@ void TionStateCall::dump() const {
 }
 
 void TionStateCall::perform() {
-  if (this->auto_state_.value_or(false)) {
-    // сделаем сброс накопленных ошибок
-    this->api_->auto_update(0, nullptr);
-  }
   if (this->has_changes()) {
     this->api_->write_state(this);
     this->reset();
@@ -721,22 +717,29 @@ void TionApiBase::set_auto_max_fan_speed(uint8_t max_fan_speed) {
 void TionApiBase::auto_update_fan_speed_() {
   this->auto_pi_.set_min(this->traits_.auto_prod[this->auto_min_fan_speed_]);
   this->auto_pi_.set_max(this->traits_.auto_prod[this->auto_max_fan_speed_]);
+  this->auto_reset();
+}
+
+void TionApiBase::set_auto_setpoint(uint16_t setpoint) {
+  this->auto_setpoint_ = setpoint;
+  this->auto_reset();
+}
+
+void TionApiBase::auto_reset() {
+  TION_LOGD(TAG, "Auto update settings min: %u, max: %u, setpoint: %u", this->auto_min_fan_speed_,
+            this->auto_max_fan_speed_, this->auto_setpoint_);
+  // сначала уведомим все сущности об изменениях
   this->on_state_fn.call_if(this->state_, 0);
+  // потом уведомим авто-режим
+  // здесь не проверяем auto_state, чтобы когда он включиться все уже было готово
+  if (this->auto_update_func_) {
+    this->auto_update_func_(0);
+  } else {
+    this->auto_pi_.reset();
+  }
 }
 
 bool TionApiBase::auto_update(uint16_t current, TionStateCall *call) {
-  // спец обработка для обновления параметров
-  if (current == 0) {
-    TION_LOGD(TAG, "Auto update settings min: %u, max: %u, setpoint: %u", this->auto_min_fan_speed_,
-              this->auto_max_fan_speed_, this->auto_setpoint_);
-    if (!this->auto_update_func_) {
-      this->auto_pi_.reset();
-    } else {
-      this->auto_update_func_(current);
-    }
-    return false;
-  }
-
   if (!this->state_.auto_state) {
     return false;
   }
@@ -751,7 +754,12 @@ bool TionApiBase::auto_update(uint16_t current, TionStateCall *call) {
     return false;
   }
 
-  TION_LOGV(TAG, "Auto update to %u ppm", current);
+  if (current < 400) {
+    TION_LOGD(TAG, "Invalid CO2: %u", current);
+    return false;
+  }
+
+  TION_LOGD(TAG, "Auto update to %u ppm", current);
 
   uint8_t fan_speed = this->state_.fan_speed;
 
@@ -770,7 +778,7 @@ bool TionApiBase::auto_update(uint16_t current, TionStateCall *call) {
     return false;
   }
 
-  TION_LOGV(TAG, "Auto new fan speed %u", fan_speed);
+  TION_LOGD(TAG, "Auto new fan speed %u", fan_speed);
   // для понимания, что переключение было из авто-режима, всегда выставляем авто
   call->set_auto_state(true);
   call->set_fan_speed(fan_speed);
