@@ -212,9 +212,6 @@ TionState TionApiBase::make_write_state_(TionStateCall *call) const {
       if (!call->get_auto_state().value_or(false)) {
         // если ручное переключение скорости, то выключаем авто-режим
         ns.auto_state = false;
-      } else if (fan_speed > 0 && !cs.power_state) {
-        // в автоматическом режиме бризер нужно включить
-        call->set_power_state(true);
       }
     }
   }
@@ -541,7 +538,7 @@ void TionApiBase::boost_enable_(uint16_t boost_time, TionStateCall *call) {
     return;
   }
 
-  if (this->state_.fan_speed == this->traits_.max_fan_speed) {
+  if (this->state_.get_fan_speed() == this->traits_.max_fan_speed) {
     TION_LOGW(TAG, "Fan is already running at maximum speed");
     return;
   }
@@ -785,6 +782,9 @@ bool TionApiBase::auto_update(uint16_t current, TionStateCall *call) {
   // для понимания, что переключение было из авто-режима, всегда выставляем авто
   call->set_auto_state(true);
   call->set_fan_speed(fan_speed);
+  if (fan_speed > 0) {
+    call->set_power_state(true);
+  }
   return true;
 }
 
