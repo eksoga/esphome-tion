@@ -140,9 +140,6 @@ template<typename C> class Controller {
       } else {
         C::set(call, state);
       }
-#ifdef TION_DUMP
-      call->dump();
-#endif
       call->perform();
     } else {
       C::set(component->parent_, state);

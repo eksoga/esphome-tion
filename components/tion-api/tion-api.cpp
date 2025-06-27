@@ -359,8 +359,11 @@ void TionStateCall::dump() const {
 
 void TionStateCall::perform() {
   if (this->has_changes()) {
+    this->dump();
     this->api_->write_state(this);
     this->reset();
+  } else {
+    TION_LOGV(TAG, "No changes to perform");
   }
 }
 
