@@ -755,13 +755,13 @@ bool TionApiBase::auto_update(uint16_t current, TionStateCall *call) {
   }
 
   if (current < 400) {
-    TION_LOGD(TAG, "Invalid CO2: %u", current);
+    TION_LOGD(TAG, "Invalid co2 level: %u", current);
     return false;
   }
 
-  TION_LOGD(TAG, "Auto update to %u ppm", current);
+  uint8_t fan_speed = this->state_.get_fan_speed();
 
-  uint8_t fan_speed = this->state_.fan_speed;
+  TION_LOGD(TAG, "Auto cur fan speed %u, new co2 %u ppm", fan_speed, current);
 
   if (this->auto_update_func_) {
     fan_speed = this->auto_update_func_(current);
@@ -774,7 +774,7 @@ bool TionApiBase::auto_update(uint16_t current, TionStateCall *call) {
     fan_speed = this->auto_pi_update_(current);
   }
 
-  if (fan_speed == this->state_.fan_speed) {
+  if (fan_speed == this->state_.get_fan_speed()) {
     return false;
   }
 

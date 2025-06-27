@@ -200,10 +200,10 @@ struct Gate {
     if (c->traits().supports_gate_position_change_mixed && c->state().gate_position == TionGatePosition::MIXED) {
       return "mdi:valve";
     }
-    return c->state().get_gate_state() ? "mdi:valve-open" : "mdi:valve-closed";
+    return c->state().is_gate_open() ? "mdi:valve-open" : "mdi:valve-closed";
   }
 
-  static bool get(const TionState &state) { return state.get_gate_state(); }
+  static bool get(const TionState &state) { return state.is_gate_open(); }
 };
 
 struct Heating {
@@ -292,7 +292,7 @@ struct FanSpeed {
     return "mdi:fan";
   }
 
-  static uint8_t get(const TionState &state) { return state.power_state ? state.fan_speed : 0; }
+  static uint8_t get(const TionState &state) { return state.get_fan_speed(); }
 };
 
 struct OutdoorTemperature {

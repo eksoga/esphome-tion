@@ -162,7 +162,10 @@ class TionState {
   // 3s: EC05 - ошибка заслонки
   uint32_t errors;
 
-  bool get_gate_state() const { return this->gate_position == TionGatePosition::OPENED; }
+  // Состояние заслонки, открыта или закрыта.
+  bool is_gate_open() const { return this->gate_position == TionGatePosition::OPENED; }
+  // Реальная текущая скорость вентилятора 0 до максимум, 0 при выключенном питании.
+  uint8_t get_fan_speed() const { return this->power_state ? this->fan_speed : 0; }
 
   // Текущая потребляемая мощность в Вт.
   float get_heater_power(const TionTraits &traits) const;
