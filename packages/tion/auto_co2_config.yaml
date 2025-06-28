@@ -1,15 +1,18 @@
 number:
   - platform: tion
+    id: tion_auto_setpoint
     type: auto_setpoint
     name: Auto Setpoint
     initial_value: 700
     restore_value: true
   - platform: tion
+    id: tion_auto_min_fan_speed
     type: auto_min_fan_speed
     name: Auto Min Fan Speed
     initial_value: 1
     restore_value: true
   - platform: tion
+    id: tion_auto_max_fan_speed
     type: auto_max_fan_speed
     name: Auto Max Fan Speed
     initial_value: 3
