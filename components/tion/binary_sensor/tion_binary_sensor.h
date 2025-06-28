@@ -4,6 +4,7 @@
 #include "esphome/core/helpers.h"
 #include "esphome/core/component.h"
 #include "esphome/core/log.h"
+#include "esphome/core/version.h"
 
 #include "esphome/components/binary_sensor/binary_sensor.h"
 
