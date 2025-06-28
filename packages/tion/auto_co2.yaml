@@ -83,7 +83,7 @@ tion:
       // Агрессивность вентиляции
       const int aggressiveness = id(tion_auto_aggressiveness).state;
       // Минимальная скорость вентиляции
-      const uint8_t min_speed = id(tion_api).api()->get_auto_min_fan_speed();
+      uint8_t min_speed = id(tion_api).api()->get_auto_min_fan_speed();
       // Максимальная скорость вентиляции
       const uint8_t max_speed = id(tion_api).api()->get_auto_max_fan_speed();
       // Текущая скорость вентиляции
