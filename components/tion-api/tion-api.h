@@ -162,6 +162,8 @@ class TionState {
   // 3s: EC05 - ошибка заслонки
   uint32_t errors;
 
+  bool is_boost_running() const { return this->boost_time_left > 0; }
+
   // Состояние заслонки, открыта или закрыта.
   bool is_gate_open() const { return this->gate_position == TionGatePosition::OPENED; }
   // Реальная текущая скорость вентилятора 0 до максимум, 0 при выключенном питании.
@@ -248,6 +250,7 @@ class TionApiBase {
 
   constexpr static const char *PRESET_NONE = "none";
 
+  // TODO оптимизировать сохраняя в биты
   struct PresetData {
     // =0 - без изменений
     int8_t target_temperature;
@@ -256,7 +259,7 @@ class TionApiBase {
     // <0 - без изменений, =0 - выкл, >0 - вкл
     int8_t power_state;
     // =0 - без изменений, >0 - вкл
-    uint8_t fan_speed;
+    uint8_t fan_speed;  // FIXME fan_speed теперь может быть 0
     // =UNKNOWN - без изменений
     TionGatePosition gate_position;
     // <0 - без изменений, =0 - выкл, >0 - вкл
@@ -338,6 +341,7 @@ class TionApiBase {
   void boost_enable_(uint16_t boost_time, TionStateCall *call);
   void boost_cancel_(TionStateCall *call);
   void boost_save_state_();
+  bool boost_is_running_() const { return this->state_.is_boost_running(); }
   void auto_update_fan_speed_();
   uint8_t auto_pi_update_(uint16_t current);
 };

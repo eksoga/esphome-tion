@@ -394,9 +394,9 @@ TionApiBase::TionApiBase() : auto_pi_(TION_AUTO_KP, TION_AUTO_TI, TION_AUTO_DB) 
 void TionApiBase::notify_state_(uint32_t request_id) {
   TionStateCall *call = nullptr;
 
-  if (this->state_.boost_time_left > 0) {
+  if (this->boost_is_running_()) {
     // если изменили скорость вентиляции или выключили бризер
-    if (this->state_.fan_speed != this->traits_.max_fan_speed || !this->state_.power_state) {
+    if (this->state_.get_fan_speed() != this->traits_.max_fan_speed) {
       TION_LOGD(TAG, "Boost canceled by user action");
       // пересохраняем изменившиеся данные, для восстановления
       this->boost_save_state_();
@@ -533,7 +533,7 @@ void TionApiBase::enable_boost(uint16_t boost_time, TionStateCall *call) {
 }
 
 void TionApiBase::boost_enable_(uint16_t boost_time, TionStateCall *call) {
-  if (this->state_.boost_time_left > 0) {
+  if (this->boost_is_running_()) {
     TION_LOGW(TAG, "Boost is already in progress, time left %u s", this->state_.boost_time_left);
     return;
   }
@@ -548,9 +548,9 @@ void TionApiBase::boost_enable_(uint16_t boost_time, TionStateCall *call) {
     return;
   }
 
-  this->boost_save_state_();
   TION_LOGD(TAG, "Schedule boost for %d s", boost_time);
   this->state_.boost_time_left = boost_time;
+  this->boost_save_state_();
 
   call->set_power_state(true);
   call->set_fan_speed(this->traits_.max_fan_speed);
@@ -605,7 +605,7 @@ void TionApiBase::PresetData::to_call(TionStateCall *call) const {
 }
 
 void TionApiBase::boost_cancel_(TionStateCall *call) {
-  if (!(this->state_.boost_time_left > 0)) {
+  if (!this->boost_is_running_()) {
     return;
   }
   TION_LOGD(TAG, "Boost finished");
@@ -745,7 +745,7 @@ bool TionApiBase::auto_update(uint16_t current, TionStateCall *call) {
   }
 
   // режим турбо имеет приоритет
-  if (this->state_.boost_time_left > 0) {
+  if (this->boost_is_running_()) {
     return false;
   }
 

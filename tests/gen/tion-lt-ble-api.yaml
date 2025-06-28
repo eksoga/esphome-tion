@@ -293,6 +293,73 @@ button:
     confirm:
       name: Reset Filter Confirm
 
-  ## Additional test-only entities
+## Additional test-only entities
 fan:
   - { platform: tion, name: None }
+time:
+  - id: !extend g_time
+    on_time:
+     seconds: 0
+     minutes: 0
+     hours: 8
+     then:
+     # power
+      - tion.power.turn_on: tion_api
+      - tion.power.turn_off: tion_api
+      - tion.power.toggle: tion_api
+      - if:
+          condition:
+            - tion.power.is_on: tion_api
+          then:
+            - tion.power.turn_off: tion_api
+      - if:
+          condition:
+            - tion.power.is_off: tion_api
+          then:
+            - tion.power.turn_on: tion_api
+      # heater
+      - tion.heater.turn_on: tion_api
+      - tion.heater.turn_off: tion_api
+      - tion.heater.toggle: tion_api
+      - if:
+          condition:
+            - tion.heater.is_on: tion_api
+          then:
+            - tion.heater.turn_off: tion_api
+      - if:
+          condition:
+            - tion.heater.is_off: tion_api
+          then:
+            - tion.heater.turn_on: tion_api
+    # boost
+      - tion.boost.turn_on: tion_api
+      - tion.boost.turn_off: tion_api
+      - tion.boost.toggle: tion_api
+      - if:
+          condition:
+            - tion.boost.is_on: tion_api
+          then:
+            - tion.boost.turn_off: tion_api
+      - if:
+          condition:
+            - tion.boost.is_off: tion_api
+          then:
+            - tion.boost.turn_on: tion_api
+    # auto
+      - tion.auto.turn_on: tion_api
+      - tion.auto.turn_off: tion_api
+      - tion.auto.toggle: tion_api
+      - if:
+          condition:
+            - tion.auto.is_on: tion_api
+          then:
+            - tion.auto.turn_off: tion_api
+      - if:
+          condition:
+            - tion.auto.is_off: tion_api
+          then:
+            - tion.auto.turn_on: tion_api
+      # fan_speed
+      - tion.fan_speed.set:
+          id: tion_api
+          value: 1

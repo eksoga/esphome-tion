@@ -256,11 +256,7 @@ struct Recirculation {
 };
 
 struct Boost : public binary_sensor::Boost {
-  static void set(TionApiComponent *c, bool state) {
-    auto call = c->make_call();
-    c->api()->enable_boost(state, call);
-    call->perform();
-  }
+  static void set(TionApiComponent *c, bool state) { c->boost_enable(state); }
 };
 
 }  // namespace switch_
@@ -268,7 +264,7 @@ struct Boost : public binary_sensor::Boost {
 namespace sensor {
 struct FanSpeed {
   static const char *get_icon(TionApiComponent *c) {
-    if (c->state().boost_time_left > 0) {
+    if (c->state().is_boost_running()) {
       return "mdi:fan-clock";
     }
     if (c->state().auto_state) {

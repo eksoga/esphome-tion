@@ -98,6 +98,20 @@ class TionApiComponent : public PollingComponent {
   const dentra::tion::TionTraits &traits() const { return this->api_->get_traits(); }
   const dentra::tion::TionState &state() const { return this->api_->get_state(); }
 
+  void auto_update(uint16_t current_co2) {
+    auto *call = this->make_call();
+    if (this->api_->auto_update(current_co2, call)) {
+      call->perform();
+    }
+  }
+
+  void boost_enable(bool state) {
+    // для режима турбо не применяем BatchCall чтобы ни в коем случае не смешать вызовы.
+    TionStateCall call(this->api_);
+    this->api_->enable_boost(state, &call);
+    call.perform();
+  }
+
 #ifdef USE_TION_RESTORE_STATE
   void set_rtc_key(const char *key) {
     if (key) {

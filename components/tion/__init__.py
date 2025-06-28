@@ -4,6 +4,7 @@ from typing import Any
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome import automation, core
+from esphome.automation import register_action, register_condition
 from esphome.components import sensor as esphome_sensor
 from esphome.const import (
     CONF_CO2,
@@ -16,6 +17,7 @@ from esphome.const import (
     CONF_RESTORE_STATE,
     CONF_TEMPERATURE,
     CONF_TYPE,
+    CONF_VALUE,
 )
 from esphome.core import ID
 from esphome.cpp_generator import MockObjClass
@@ -240,15 +242,9 @@ def _setup_tion_api_button_presets(config: dict, var: cg.MockObj):
 async def _setup_auto(config: dict, var):
     api = var.Papi()
 
-    code = f"""
-auto *call = {var}->make_call();
-if ({api}->auto_update(x, call)) {{
-  call->perform();
-}}
-"""
-
+    code = f"{var}->auto_update(x);"
     lam = await cg.process_lambda(
-        value=core.Lambda(code.strip()), parameters=[(cg.float_, "x")], capture=""
+        value=core.Lambda(code), parameters=[(cg.float_, "x")], capture=""
     )
 
     cg.add(cg.MockObj(config[CONF_AUTO_CO2].id, "->").add_on_state_callback(lam))
@@ -331,3 +327,85 @@ def new_pc(pc_cfg: dict[str, str | dict[str, Any]]):
             return tion_ns.class_(f"property_controller::{ct_typ}::{pc_typ}")
 
     return TionPC(TionApiComponent, CONF_TION_ID, pc_cfg, get_component_type())
+
+
+TION_ACTION_SCHEMA = automation.maybe_simple_id(
+    {cv.Required(CONF_ID): cv.use_id(TionApiComponent)}
+)
+
+PowerToggleAction = tion_ns.class_("PowerToggleAction", automation.Action)
+PowerTurnOnAction = tion_ns.class_("PowerTurnOnAction", automation.Action)
+PowerTurnOffAction = tion_ns.class_("PowerTurnOnAction", automation.Action)
+PowerCondition = tion_ns.class_("PowerCondition", automation.Condition)
+
+HeaterToggleAction = tion_ns.class_("HeaterToggleAction", automation.Action)
+HeaterTurnOnAction = tion_ns.class_("HeaterTurnOnAction", automation.Action)
+HeaterTurnOffAction = tion_ns.class_("HeaterTurnOffAction", automation.Action)
+HeaterCondition = tion_ns.class_("HeaterCondition", automation.Condition)
+
+BoostToggleAction = tion_ns.class_("BoostToggleAction", automation.Action)
+BoostTurnOnAction = tion_ns.class_("BoostTurnOnAction", automation.Action)
+BoostTurnOffAction = tion_ns.class_("BoostTurnOffAction", automation.Action)
+BoostCondition = tion_ns.class_("BoostCondition", automation.Condition)
+
+AutoToggleAction = tion_ns.class_("AutoToggleAction", automation.Action)
+AutoTurnOnAction = tion_ns.class_("AutoTurnOnAction", automation.Action)
+AutoTurnOffAction = tion_ns.class_("AutoTurnOffAction", automation.Action)
+AutoCondition = tion_ns.class_("AutoCondition", automation.Condition)
+
+FanSpeedSetAction = tion_ns.class_("FanSpeedSetAction", automation.Action)
+
+
+@register_action("tion.power.toggle", PowerToggleAction, TION_ACTION_SCHEMA)
+@register_action("tion.power.turn_on", PowerTurnOnAction, TION_ACTION_SCHEMA)
+@register_action("tion.power.turn_off", PowerTurnOffAction, TION_ACTION_SCHEMA)
+@register_action("tion.heater.toggle", HeaterToggleAction, TION_ACTION_SCHEMA)
+@register_action("tion.heater.turn_on", HeaterTurnOnAction, TION_ACTION_SCHEMA)
+@register_action("tion.heater.turn_off", HeaterTurnOffAction, TION_ACTION_SCHEMA)
+@register_action("tion.boost.toggle", BoostToggleAction, TION_ACTION_SCHEMA)
+@register_action("tion.boost.turn_on", BoostTurnOnAction, TION_ACTION_SCHEMA)
+@register_action("tion.boost.turn_off", BoostTurnOffAction, TION_ACTION_SCHEMA)
+@register_action("tion.auto.toggle", AutoToggleAction, TION_ACTION_SCHEMA)
+@register_action("tion.auto.turn_on", AutoTurnOnAction, TION_ACTION_SCHEMA)
+@register_action("tion.auto.turn_off", AutoTurnOffAction, TION_ACTION_SCHEMA)
+async def tion_switch_to_code(config, action_id, template_arg, args):
+    paren = await cg.get_variable(config[CONF_ID])
+    return cg.new_Pvariable(action_id, template_arg, paren)
+
+
+@register_condition("tion.power.is_on", PowerCondition, TION_ACTION_SCHEMA)
+@register_condition("tion.heater.is_on", HeaterCondition, TION_ACTION_SCHEMA)
+@register_condition("tion.boost.is_on", BoostCondition, TION_ACTION_SCHEMA)
+@register_condition("tion.auto.is_on", BoostCondition, TION_ACTION_SCHEMA)
+async def tion_switch_is_on_to_code(config, condition_id, template_arg, args):
+    paren = await cg.get_variable(config[CONF_ID])
+    return cg.new_Pvariable(condition_id, template_arg, paren, True)
+
+
+@register_condition("tion.power.is_off", PowerCondition, TION_ACTION_SCHEMA)
+@register_condition("tion.heater.is_off", HeaterCondition, TION_ACTION_SCHEMA)
+@register_condition("tion.boost.is_off", BoostCondition, TION_ACTION_SCHEMA)
+@register_condition("tion.auto.is_off", BoostCondition, TION_ACTION_SCHEMA)
+async def tion_switch_is_off_to_code(config, condition_id, template_arg, args):
+    paren = await cg.get_variable(config[CONF_ID])
+    return cg.new_Pvariable(condition_id, template_arg, paren, False)
+
+
+TION_OPERATION_BASE_SCHEMA = cv.Schema(
+    {cv.Required(CONF_ID): cv.use_id(TionApiComponent)}
+)
+
+
+@register_action(
+    "tion.fan_speed.set",
+    FanSpeedSetAction,
+    TION_OPERATION_BASE_SCHEMA.extend(
+        {cv.Required(CONF_VALUE): cv.templatable(cv.int_range(min=0, max=6))}
+    ),
+)
+async def tion_number_set_to_code(config, action_id, template_arg, args):
+    paren = await cg.get_variable(config[CONF_ID])
+    var = cg.new_Pvariable(action_id, template_arg, paren)
+    template_ = await cg.templatable(config[CONF_VALUE], args, int)
+    cg.add(var.set_value(template_))
+    return var
