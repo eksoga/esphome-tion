@@ -69,7 +69,6 @@ BREEZER_TYPES = {
 }
 
 PRESET_GATE_POSITIONS = {
-    "none": TionGatePosition.NONE,
     "outdoor": TionGatePosition.OUTDOOR,
     "indoor": TionGatePosition.INDOOR,
     "mixed": TionGatePosition.MIXED,
@@ -78,14 +77,18 @@ PRESET_GATE_POSITIONS = {
 
 PRESET_SCHEMA = cv.Schema(
     {
-        cv.Optional(CONF_POWER, default=True): cv.boolean,
-        cv.Optional(CONF_HEATER): cv.boolean,
-        cv.Optional(CONF_FAN_SPEED, default=0): cv.int_range(min=0, max=6),
-        cv.Optional(CONF_TEMPERATURE, default=0): cv.int_range(min=-30, max=30),
-        cv.Optional(CONF_GATE_POSITION, default="none"): cv.one_of(
-            *PRESET_GATE_POSITIONS, lower=True
+        cv.Optional(CONF_POWER, default=True): cv.Any(cv.none, cv.boolean),
+        cv.Optional(CONF_HEATER, default="none"): cv.Any(cv.none, cv.boolean),
+        cv.Optional(CONF_FAN_SPEED, default="none"): cv.Any(
+            cv.none, cv.int_range(min=0, max=6)
         ),
-        cv.Optional(CONF_AUTO): cv.boolean,
+        cv.Optional(CONF_TEMPERATURE, default="none"): cv.Any(
+            cv.none, cv.int_range(min=0, max=30)
+        ),
+        cv.Optional(CONF_GATE_POSITION, default="none"): cv.Any(
+            cv.none, cv.one_of(*PRESET_GATE_POSITIONS, lower=True)
+        ),
+        cv.Optional(CONF_AUTO, default="none"): cv.Any(cv.none, cv.boolean),
     }
 )
 
@@ -192,35 +195,50 @@ def _setup_tion_api_presets(config: dict, var: cg.MockObj):
     if CONF_PRESETS not in config:
         return
 
-    presets = set()
+    presets = {}
     for preset in config[CONF_PRESETS]:
         preset_name = str(preset).strip()
         if preset_name.lower() == "none":
-            logging.warning("Preset 'none' is reserved")
+            logging.warning('Preset "none" is reserved')
             continue
-        if preset_name.lower() in presets:
-            logging.warning("Preset '%s' is already exists", preset)
-            continue
-        preset = config[CONF_PRESETS][preset_name]
-        cg.add(
-            var.add_preset(
-                preset_name,
-                cg.StructInitializer(
-                    "",
-                    ("target_temperature", preset[CONF_TEMPERATURE]),
-                    ("heater_state", int(preset.get(CONF_HEATER, -1))),
-                    ("power_state", int(preset.get(CONF_POWER, -1))),
-                    ("fan_speed", preset[CONF_FAN_SPEED]),
-                    (
-                        "gate_position",
-                        PRESET_GATE_POSITIONS[preset[CONF_GATE_POSITION]],
-                    ),
-                    ("auto_state", int(preset.get(CONF_AUTO, -1))),
-                ),
-            )
-        )
 
-        presets.add(preset_name)
+        preset = config[CONF_PRESETS][preset_name]
+        for k, v in presets.items():
+            if preset == v:
+                logging.warning('Preset "%s" duplicates "%s"', preset_name, k)
+
+        args = [
+            ("target_temperature", CONF_TEMPERATURE),
+            ("heater_state", CONF_HEATER),
+            ("power_state", CONF_POWER),
+            ("fan_speed", CONF_FAN_SPEED),
+            ("gate_position", CONF_GATE_POSITION),
+            ("auto_state", CONF_AUTO),
+        ]
+        for arg in args:
+            if preset[arg[1]] is not None:
+                break
+        else:
+            logging.warning(
+                'Preset "%s" completely empty and do not change device state',
+                preset_name,
+            )
+
+        def preset_arg(nm: str):
+            if preset[nm] is not None:
+                return (
+                    PRESET_GATE_POSITIONS[preset[nm]]
+                    if nm == CONF_GATE_POSITION
+                    else preset[nm]
+                )
+            if nm == CONF_GATE_POSITION:
+                return TionGatePosition.UNKNOWN
+            return -1
+
+        struct_args = [(arg[0], preset_arg(arg[1])) for arg in args]
+        cg.add(var.add_preset(preset_name, cg.StructInitializer("", *struct_args)))
+
+        presets[preset_name] = preset
 
 
 def _setup_tion_api_button_presets(config: dict, var: cg.MockObj):
@@ -228,15 +246,12 @@ def _setup_tion_api_button_presets(config: dict, var: cg.MockObj):
         return
     button_presets = config[CONF_BUTTON_PRESETS]
 
-    cg.add(
-        var.set_button_presets(
-            cg.StructInitializer(
-                "",
-                ("tmp", button_presets[CONF_TEMPERATURE]),
-                ("fan", button_presets[CONF_FAN_SPEED]),
-            )
-        )
-    )
+    struct_args = [
+        ("tmp", button_presets[CONF_TEMPERATURE]),
+        ("fan", button_presets[CONF_FAN_SPEED]),
+    ]
+
+    cg.add(var.set_button_presets(cg.StructInitializer("", *struct_args)))
 
 
 async def _setup_auto(config: dict, var):
@@ -279,7 +294,7 @@ async def to_code(config: dict):
             await _setup_auto(conf[CONF_AUTO], var)
         if conf[CONF_RESTORE_STATE]:
             cg.add_define("USE_TION_RESTORE_STATE")
-            cg.add(var.set_rtc_key(conf[CONF_ID].id))
+            cg.add(var.set_rtc_key(f"{conf[CONF_ID].id}"))
         if CONF_ENABLE_KIV:
             cg.add_build_flag("-DTION_ENABLE_KIV")
 

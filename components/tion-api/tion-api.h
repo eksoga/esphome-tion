@@ -250,16 +250,15 @@ class TionApiBase {
 
   constexpr static const char *PRESET_NONE = "none";
 
-  // TODO оптимизировать сохраняя в биты
   struct PresetData {
-    // =0 - без изменений
+    // <0 - без изменений
     int8_t target_temperature;
     // <0 - без изменений, =0 - выкл, >0 - вкл
     int8_t heater_state;
     // <0 - без изменений, =0 - выкл, >0 - вкл
     int8_t power_state;
-    // =0 - без изменений, >0 - вкл
-    uint8_t fan_speed;  // FIXME fan_speed теперь может быть 0
+    // <0 - без изменений, >=0 - вкл
+    int8_t fan_speed;
     // =UNKNOWN - без изменений
     TionGatePosition gate_position;
     // <0 - без изменений, =0 - выкл, >0 - вкл
@@ -267,6 +266,8 @@ class TionApiBase {
 
     void to_call(TionStateCall *call) const;
     void from_state(const TionState &state);
+    bool is_filled() const;
+    bool check(const char *name, const TionTraits &traits) const;
   };
 
   using on_ready_type = etl::delegate<void()>;

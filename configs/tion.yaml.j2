@@ -167,12 +167,13 @@ tion:
   ## eco, sleep and activity are automatically translated to your native language and assign icons.
   ## Preset configuration:
   ##  name_of_your_preset:
-  ##    fan_speed: 1            # remove or set to 0 to use current state
-  ##    temperature: 16         # remove or set to 0 to use current state
-  ##    heater: False           # remove to use current state
-  ##    power: True             #
+  ##    power: True             # Optional, Boolean, default: True.
+  ##    fan_speed: 1            # Optional, Integer, range 0-6, default: None.
+  ##    temperature: 16         # Optional, Integer, range 0-30, default: None.
+  ##    heater: False           # Optional, Boolean, default: None.
+  ##    auto: None              # Optional, Boolean, default: None.
 {%- if type in ["3s", "4s"] %}
-  ##    gate_position: outdoor  # remove to use current state, see below for available values
+  ##    gate_position: outdoor  # Optional, Enum, default: None. See below for available values.
   ## Available gate_position:
   ##  * outdoor - set gate position to outdoor air intake (3S and 4S only)
   ##  * indoor - set gate position to indoor air intake (3S and 4S only)
@@ -185,6 +186,18 @@ tion:
   #   home: { fan_speed: 2, temperature: 16, heater: False }
   #   away: { fan_speed: 1, temperature: 10, heater: False }
   #   sleep: { fan_speed: 1, temperature: 18 }
+{%- if not is_prod %}
+  presets:
+    home: { fan_speed: 2, temperature: 16, heater: False }
+    away: { fan_speed: 1, temperature: 10, heater: False }
+    sleep: { fan_speed: 1, temperature: 18}
+    gate_indoor: {gate_position: indoor}
+    gate_outdoor: {gate_position: outdoor}
+    no_heater: { heater: off }
+    no_auto: { auto: off }
+    do_empty_warning: { power: none }
+    do_dup_warning: { heater: off }
+{%- endif %}
 {%- if type == "lt" and port == "ble" %}
   ## Optional, configure hardware button presets. Factory defaults are: 2/4/6, 10/20/25 °C
   #button_presets:

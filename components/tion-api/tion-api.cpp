@@ -590,10 +590,10 @@ void TionApiBase::PresetData::to_call(TionStateCall *call) const {
   if (this->heater_state >= 0) {
     call->set_heater_state(this->heater_state > 0);
   }
-  if (this->fan_speed != 0) {
+  if (this->fan_speed >= 0) {
     call->set_fan_speed(this->fan_speed);
   }
-  if (this->target_temperature != 0) {
+  if (this->target_temperature >= 0) {
     call->set_target_temperature(this->target_temperature);
   }
   if (this->gate_position != TionGatePosition::UNKNOWN) {
@@ -602,6 +602,27 @@ void TionApiBase::PresetData::to_call(TionStateCall *call) const {
   if (this->auto_state >= 0) {
     call->set_auto_state(this->auto_state > 0);
   }
+}
+
+bool TionApiBase::PresetData::is_filled() const {
+  return this->power_state >= 0 || this->fan_speed >= 0 || this->heater_state >= 0 || this->target_temperature >= 0 ||
+         this->auto_state >= 0 || this->gate_position != TionGatePosition::UNKNOWN;
+}
+
+bool TionApiBase::PresetData::check(const char *name, const TionTraits &traits) const {
+  if (!this->is_filled()) {
+    TION_LOGW(TAG, "Preset '%s' has no data to change", name);
+    return false;
+  }
+  if (this->target_temperature >= 0 && this->target_temperature < traits.min_target_temperature) {
+    TION_LOGW(TAG, "Preset '%s' has invalid target temperature %d", name, this->target_temperature);
+    return false;
+  }
+  if (this->fan_speed > traits.max_fan_speed) {
+    TION_LOGW(TAG, "Preset '%s' has invalid fan speed %u", name, this->fan_speed);
+    return false;
+  }
+  return true;
 }
 
 void TionApiBase::boost_cancel_(TionStateCall *call) {
@@ -654,18 +675,7 @@ void TionApiBase::add_preset(const std::string &name, const PresetData &data) {
     TION_LOGW(TAG, "Skip reserved preset 'none'");
     return;
   }
-  if (data.target_temperature == 0 && data.heater_state < 0 && data.power_state < 0 && data.fan_speed == 0 &&
-      data.gate_position == TionGatePosition::UNKNOWN && data.auto_state < 0) {
-    TION_LOGW(TAG, "Preset '%s' has no data to change", name.c_str());
-    return;
-  }
-  if (data.target_temperature != 0 && (data.target_temperature < this->traits_.min_target_temperature ||
-                                       data.target_temperature > this->traits_.max_target_temperature)) {
-    TION_LOGW(TAG, "Preset '%s' has invalid target temperature %d", name.c_str(), data.target_temperature);
-    return;
-  }
-  if (data.fan_speed > this->traits_.max_fan_speed) {
-    TION_LOGW(TAG, "Preset '%s' has invalid fan speed %u", name.c_str(), data.fan_speed);
+  if (!data.check(name.c_str(), this->traits_)) {
     return;
   }
   TION_LOGD(TAG, "Setup preset '%s': power=%d, heat=%d, fan=%u, temp=%d, gate=%u", name.c_str(), data.power_state,
