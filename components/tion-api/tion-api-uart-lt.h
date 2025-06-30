@@ -1,6 +1,7 @@
 #pragma once
 
 #include "tion-api-uart.h"
+#include "tion-api.h"
 
 namespace dentra {
 namespace tion_lt {
@@ -18,7 +19,9 @@ class TionLtUartProtocol : public tion::TionUartProtocolBase<45> {
       bool heater_state : 1;
       bool sound_state : 1;
       bool led_state : 1;
-      uint8_t reserved : 4;
+      bool auto_sate : 1;
+      tion::CommSource comm_source : 1;
+      uint8_t reserved : 2;
     };
     uint8_t fan_speed;
     int8_t target_temperature;

@@ -249,9 +249,13 @@ TionLtUartProtocol::read_frame_result_t TionLtUartProtocol::read_frame_(tion::Ti
     frame.data.state.counters.airflow_counter = t_data.airflow_counter;
     frame.data.state.filter_state = frame.data.state.counters.filter_time_left_d() <= 30;
     frame.data.state.heater_present = true;
-    frame.data.state.gate_state = t_data.power_state ? tionlt_state_t::OPENED : tionlt_state_t::CLOSED;
+    frame.data.state.gate_state = t_data.fan_speed > 0 ? tionlt_state_t::OPENED : tionlt_state_t::CLOSED;
     frame.data.state.max_fan_speed = 6;
     // frame.data.state.pcb_temperature = INT8_MIN;
+
+    // данные, которыми управляем самостоятельно
+    frame.data.state.ma_auto = t_data.auto_sate;
+    frame.data.state.comm_source = t_data.comm_source;
 
     this->reader(*reinterpret_cast<const tion::tion_any_frame_t *>(&frame), sizeof(frame));
   } else if (std::strncmp(str, ST_FIRM, sizeof(ST_FIRM) - 1) == 0) {
@@ -343,6 +347,10 @@ bool TionLtUartProtocol::write_frame(uint16_t type, const void *data, size_t siz
       if (this->t_data.power_state != set.power_state) {
         this->write_cmd_(set.power_state ? CMD_POWER_ON : CMD_POWER_OFF);
       }
+
+      // дополнительно сохраним состояния, которым не можем передать в бризер
+      this->t_data.auto_sate = set.ma_auto;
+      this->t_data.comm_source = set.comm_source;
 
       this->busy_--;
 
