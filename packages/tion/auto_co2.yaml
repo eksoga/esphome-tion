@@ -102,6 +102,10 @@ tion:
       // Время последнего обновления скорости
       static uint32_t last_update_time = 0;
 
+      ESP_LOGV("pkg_tion_auto_co2", "{ %d, %d, %u, %u, %u, %d, %" PRIu32 ", %" PRIu32 " }",
+        co2_level, aggressiveness, min_speed, max_speed, cur_speed,
+        int(min_time_delta / 60000), last_update_time, millis());
+
       // Проверим был ли сброс/изменение настроек
       if (co2_level == 0) {
         last_update_time = 0;
