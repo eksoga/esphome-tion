@@ -1,4 +1,6 @@
 {%- if (port|length) == 0 or (type|length) == 0 %}{{ ("port or type not defined")|raise}}{% endif -%}
+{%- set supports_kiv = type == "lt" and port == "uart" -%}
+{%- set supports_auto = packages["tion/auto_co2"].enabled -%}
 substitutions:
   {%- if port == "ble" %}
   ## Tion mac address. Setup yours.
@@ -108,15 +110,15 @@ vport:
     ble_client_id: tion_{{ port }}_client
     ## Optional, Do not disconnect after receiving state. Default: false.
     ## You can enable persistent.yaml package to control it at runtime.
-    persistent_connection: false
+    persistent_connection: False
     ## Optional, Allow to disable other BLE device scanning when breezer is already connected. Default: false.
-    # disable_scan: false
+    # disable_scan: False
     {%- else %}
     uart_id: tion_uart
     {%- endif %}
     {%- if type == "3s" and port == "ble" %}
     ## Optional, Send a pair command after every connect (experimental feature)
-    # experimental_always_pair: false
+    # experimental_always_pair: False
     {%- endif %}
     ## Optional, Interval between sending commands. Set to 0ms to send one command per loop.
     # command_interval: {{ "100ms" if port == "ble" else "20ms" }}
@@ -145,22 +147,23 @@ tion:
   ## Optional, Timeout to enable state problem sensor. Must be less than update_interval. Default: 3s.
   state_timeout: {{ "3s" if port == "uart" else "30s" }}
   ## Optional, Updates sensor values on any state response or only if they have been changed. Default: false.
-  force_update: false
+  force_update: False
   ## Optional, Periodically saves current state and restores it of power loss. Default: false.
-  restore_state: {{ "false" if is_prod else "true" }}
-  {%- if type == "lt" and port == "uart" %}
+  restore_state: {{ not is_prod }}
+  {%- if supports_kiv %}
   ## Optional, Allow to completely stop the fan without closing air valve. Default: false.
   ##   Limitations of fan off:
   ##     - min outdoor temperature is 5°C
   ##     - heater is off
-  enable_kiv: false
+  enable_kiv: {{ not prod }}
   {%- endif %}
+  ##
   ## Uncomment to enable automatic co2 fan speed management.
   ## Also required uncommented tion/auto_co2.yaml and tion/auto_co2_config.yaml.
   ## Please find example of co2 sensor by searching co2_value in this file.
-  {{ "" if packages["tion/auto_co2"].enabled else "# " }}auto:
-  {{ "" if packages["tion/auto_co2"].enabled else "# " }}  co2: co2_value # this is not an id from HA but id from your sensor in this config
-
+  {{ "" if supports_auto else "# " }}auto:
+  {{ "" if supports_auto else "# " }}  co2: co2_value # this is not an id from HA but id from your sensor in this config
+  ##
   ## Optional, Enable presets. Default: <empty> (no presets)
   ## You can define any number of presets with any name.
   ## In Home assistant climate entity presets with names home, away, boost, comfort,
@@ -221,14 +224,18 @@ climate:
     name: Climate
     ## Add HEAT_COOL mode to support turn_on without touching current heater mode.
     enable_heat_cool: True
-    ## Add addition "Automatic" fan mode. Affected only if auto enabled.
+    ## Add addition "Automatic" fan mode. Affected only if auto is enabled.
     enable_fan_auto: True
+  {%- if supports_kiv %}
+    ## Add additional "Off" fan mode. Affected only if enable_kiv is on.
+    enable_fan_off: {{ not is_prod }}
+  {%- endif %}
 
 ## Example of control with a fan entity. More info at CONFIGURATION.md.
-#fan:
-#  - platform: tion
-#    id: tion_climate
-#    name: Fan
+{{ "# " if is_prod else "" }}fan:
+{{ "# " if is_prod else "" }}  - platform: tion
+{{ "# " if is_prod else "" }}    id: tion_fan
+{{ "# " if is_prod else "" }}    name: Fan
 
 sensor:
   ## Temperature of air before heater, °C (celsius).
@@ -258,18 +265,21 @@ sensor:
     id: tion_boost_time_left
     type: boost_time_left
     name: Boost Time Left
+  ##
   ## Example of sensor from Home Assistant.
   #- platform: homeassistant
   #  id: co2_value
   #  entity_id: sensor.bedroom_air_monitor_co2
+  ##
   ## Example of sensor from MQTT broker.
   #- platform: mqtt_subscribe
   #  id: co2_value
   #  topic: the/topic
+  ##
   ## Example of fake co2 constant value sensor.
-  {{ "" if packages["tion/auto_co2"].enabled else "# " }}- platform: template
-  {{ "" if packages["tion/auto_co2"].enabled else "# " }}  id: co2_value
-  {{ "" if packages["tion/auto_co2"].enabled else "# " }}  lambda: return 800;
+  {{ "" if supports_auto else "# " }}- platform: template
+  {{ "" if supports_auto else "# " }}  id: co2_value
+  {{ "" if supports_auto else "# " }}  lambda: return 800;
 {%- if not is_prod %}
   ## Additional test-only entities
   - { platform: tion, name: None, type: fan_speed }
@@ -335,7 +345,7 @@ number:
     type: boost_time
     name: Boost Time
     initial_value: 20min
-    restore_value: true
+    restore_value: True
 {%- if not is_prod %}
   ## Additional test-only entities
   - { platform: tion, name: None, type: fan_speed }
@@ -446,12 +456,7 @@ button:
 {%- endif %#}
 
 {%- if not is_prod %}
-## Additional test-only entities
-fan:
-  - { platform: tion, name: None }
-{%- endif %}
-
-{%- if not is_prod %}
+## Test-only
 time:
   - id: !extend g_time
     on_time:

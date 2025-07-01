@@ -46,14 +46,14 @@ climate::ClimateTraits TionClimate::traits() {
       climate::CLIMATE_MODE_HEAT,
       climate::CLIMATE_MODE_FAN_ONLY,
   });
-  if (this->enable_heat_cool_) {
+  if (this->options_.enable_heat_cool) {
     traits.add_supported_mode(climate::CLIMATE_MODE_HEAT_COOL);
   }
-  if (this->parent_->traits().supports_kiv) {
-    traits.add_supported_fan_mode(climate::CLIMATE_FAN_OFF);
-  }
-  if (this->enable_fan_auto_ && this->parent_->api()->auto_is_valid()) {
+  if (this->options_.enable_fan_auto && this->parent_->api()->auto_is_valid()) {
     traits.add_supported_fan_mode(climate::CLIMATE_FAN_AUTO);
+  }
+  if (this->options_.enable_fan_off && this->parent_->traits().supports_kiv) {
+    traits.add_supported_fan_mode(climate::CLIMATE_FAN_OFF);
   }
   for (uint8_t i = 1, max = i + this->parent_->traits().max_fan_speed; i < max; i++) {
     traits.add_supported_custom_fan_mode(fan_speed_to_mode(i));
@@ -118,7 +118,7 @@ void TionClimate::control(const climate::ClimateCall &call) {
 
   if (call.get_fan_mode().has_value()) {
     const auto fan_mode = *call.get_fan_mode();
-    if (this->enable_fan_auto_ && fan_mode == climate::CLIMATE_FAN_AUTO) {
+    if (this->options_.enable_fan_auto && fan_mode == climate::CLIMATE_FAN_AUTO) {
       TION_C_LOGD(TAG, "Set fan speed AUTO");
       tion->set_auto_state(true);
     }
@@ -151,7 +151,7 @@ void TionClimate::on_state_(const TionState &state) {
   climate::ClimateAction action;
   if (!state.power_state) {
     const auto is_auto =
-        this->enable_fan_auto_ && state.auto_state && this->parent_->api()->get_auto_min_fan_speed() == 0;
+        this->options_.enable_fan_auto && state.auto_state && this->parent_->api()->get_auto_min_fan_speed() == 0;
     mode = climate::CLIMATE_MODE_OFF;
     action = is_auto ? climate::CLIMATE_ACTION_IDLE : climate::CLIMATE_ACTION_OFF;
   } else if (state.heater_state) {
@@ -210,7 +210,7 @@ void TionClimate::on_state_(const TionState &state) {
 
 bool TionClimate::set_fan_speed_(const TionState &state) {
   // спец обработка AUTO, только если включена поддержка режима AUTO
-  if (this->enable_fan_auto_ && state.auto_state) {
+  if (this->options_.enable_fan_auto && state.auto_state) {
     // только если значение не выставлено или не AUTO
     return this->set_fan_mode_(climate::CLIMATE_FAN_AUTO);
   }
@@ -219,6 +219,7 @@ bool TionClimate::set_fan_speed_(const TionState &state) {
   if (state.fan_speed == 0) {
     // только если поддерживается скорость 0
     if (this->parent_->traits().supports_kiv) {
+      // TODO что будет если вернулись из авто с 0 скоростью, а enable_fan_off_=false
       // только если значение не выставлено или не OFF
       return this->set_fan_mode_(climate::CLIMATE_FAN_OFF);
     }

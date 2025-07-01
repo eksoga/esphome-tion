@@ -750,10 +750,11 @@ button:
 Дополнительные параметры:
 
 - `enable_heat_cool`, _boolean_: включает/выключает дополнительный режим HEAT_COOL,
-  позволяющий включать бризер через сервис [turn_on](https://www.home-assistant.io/integrations/climate/#service-climateturn_on), с восстановлением
-  предыдущего режима обогрева. По умолчанию: False.
+  позволяющий включать бризер через сервис [turn_on](https://www.home-assistant.io/integrations/climate/#service-climateturn_on), с восстановлением предыдущего режима обогрева. По умолчанию: False.
 - `enable_fan_auto`, _boolean_: включает/выключает дополнительный режим вентиляции `auto`,
   позволяющий включать автоматический режим вентиляции. По умолчанию: False.
+- `enable_fan_off`, _boolean_: Только для Lite и только если tion[enable_kiv=true].
+  Включает/выключает дополнительный режим вентиляции `off`, позволяющий отключать вентилятор. По умолчанию: False.
 
 Пример использования:
 

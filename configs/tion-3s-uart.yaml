@@ -124,15 +124,16 @@ tion:
   ## Optional, Timeout to enable state problem sensor. Must be less than update_interval. Default: 3s.
   state_timeout: 3s
   ## Optional, Updates sensor values on any state response or only if they have been changed. Default: false.
-  force_update: false
+  force_update: False
   ## Optional, Periodically saves current state and restores it of power loss. Default: false.
-  restore_state: false
+  restore_state: False
+  ##
   ## Uncomment to enable automatic co2 fan speed management.
   ## Also required uncommented tion/auto_co2.yaml and tion/auto_co2_config.yaml.
   ## Please find example of co2 sensor by searching co2_value in this file.
   # auto:
   #   co2: co2_value # this is not an id from HA but id from your sensor in this config
-
+  ##
   ## Optional, Enable presets. Default: <empty> (no presets)
   ## You can define any number of presets with any name.
   ## In Home assistant climate entity presets with names home, away, boost, comfort,
@@ -171,14 +172,14 @@ climate:
     name: Climate
     ## Add HEAT_COOL mode to support turn_on without touching current heater mode.
     enable_heat_cool: True
-    ## Add addition "Automatic" fan mode. Affected only if auto enabled.
+    ## Add addition "Automatic" fan mode. Affected only if auto is enabled.
     enable_fan_auto: True
 
 ## Example of control with a fan entity. More info at CONFIGURATION.md.
-#fan:
-#  - platform: tion
-#    id: tion_climate
-#    name: Fan
+# fan:
+#   - platform: tion
+#     id: tion_fan
+#     name: Fan
 
 sensor:
   ## Temperature of air before heater, °C (celsius).
@@ -201,14 +202,17 @@ sensor:
     id: tion_boost_time_left
     type: boost_time_left
     name: Boost Time Left
+  ##
   ## Example of sensor from Home Assistant.
   #- platform: homeassistant
   #  id: co2_value
   #  entity_id: sensor.bedroom_air_monitor_co2
+  ##
   ## Example of sensor from MQTT broker.
   #- platform: mqtt_subscribe
   #  id: co2_value
   #  topic: the/topic
+  ##
   ## Example of fake co2 constant value sensor.
   # - platform: template
   #   id: co2_value
@@ -238,7 +242,7 @@ number:
     type: boost_time
     name: Boost Time
     initial_value: 20min
-    restore_value: true
+    restore_value: True
 
 select:
   ## Optional, Air Intake control.
