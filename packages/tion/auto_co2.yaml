@@ -86,8 +86,8 @@ tion:
       uint8_t min_speed = id(tion_api).api()->get_auto_min_fan_speed();
       // Максимальная скорость вентиляции
       const uint8_t max_speed = id(tion_api).api()->get_auto_max_fan_speed();
-      // Текущая скорость вентиляции
-      const uint8_t cur_speed = id(tion_api).api()->get_state().fan_speed;
+      // Текущая скорость вентиляции, важно брать через метод чтобы учесть выкл бризер
+      const uint8_t cur_speed = id(tion_api).api()->get_state().get_fan_speed();
       // Минимальное время переключения вентилятора в миллисекундах
       const uint32_t min_time_delta = uint32_t(id(tion_auto_min_time_delta).state) * 60000;
       // Доступное количество скоростей для изменения минус 1
