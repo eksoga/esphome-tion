@@ -98,7 +98,14 @@ class TionApiComponent : public PollingComponent {
   const dentra::tion::TionTraits &traits() const { return this->api_->get_traits(); }
   const dentra::tion::TionState &state() const { return this->api_->get_state(); }
 
-  void auto_update(uint16_t current_co2) {
+  void auto_update(float co2_value) {
+    if (std::isnan(co2_value)) {
+      return;
+    }
+    auto current_co2 = static_cast<uint16_t>(co2_value);
+    if (current_co2 < 400) {
+      return;
+    }
     auto *call = this->make_call();
     if (this->api_->auto_update(current_co2, call)) {
       call->perform();
