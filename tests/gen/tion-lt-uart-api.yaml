@@ -29,13 +29,13 @@ packages:
   # tion/temperature30c: !include ../../packages/tion/temperature30c.yaml
   tion/energy: !include ../../packages/tion/energy.yaml
   base: !include ../../packages/base.yaml
-  esp32_uart: !include ../../packages/esp32_uart.yaml
+  esp32_c6_uart: !include ../../packages/esp32_c6_uart.yaml
   tion/auto_co2: !include ../../packages/tion/auto_co2.yaml
   tion/auto_co2_config: !include ../../packages/tion/auto_co2_config.yaml
   # mqtt: !include ../../packages/mqtt.yaml
   # spruthub: !include ../../packages/spruthub.yaml
   # board/lilygo: !include ../../packages/board/lilygo.yaml
-  # board/seeed_c6: !include ../../packages/board/seeed_c6.yaml
+  board/seeed_c6: !include ../../packages/board/seeed_c6.yaml
   # debug: !include ../../packages/debug.yaml
   tion/lt: !include ../../packages/tion/lt.yaml
 

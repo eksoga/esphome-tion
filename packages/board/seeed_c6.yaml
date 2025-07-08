@@ -16,7 +16,7 @@ packages:
   z.logger_jtag: !include ../z/logger_jtag.yaml
   z.status: !include ../z/status.yaml
   z.button: !include ../z/button.yaml
-  z.package_check: !include ../z/check_esp32_с6.yaml
+  z.package_check: !include ../z/check_esp32_c6.yaml
 
 esphome:
   platformio_options:
