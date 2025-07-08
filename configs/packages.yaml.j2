@@ -40,7 +40,7 @@ base:
 {%- elif type == "3s" and port == "uart" %}
 esp8266_{{ port }}:
 {%- else %}
-esp32_{{ "s3_" if type in ["4s", "o2"] and port == "uart" else "" }}{{ port }}:
+esp32_{{ "s3_" if type in ["4s", "o2"] and port == "uart" else ("c6_" if not is_prod and type == "lt" and port == "uart" else "") }}{{ port }}:
 {%- endif %}
   comment: |-
     Base platform support package:
@@ -94,7 +94,7 @@ board/lilygo:
   enabled: {{ board == "lilygo" or (type == "4s" and port == "uart" and board != "lilygo") }}
 board/seeed_c6:
   comment: XIAO SEEED ESP32-C6 support package.
-  enabled: {{ board == "seeed_c6" }}
+  enabled: {{ board == "seeed_c6" or (not is_prod and type == "lt" and port == "uart") }}
 
 debug:
   comment: Additional debug information.

@@ -31,6 +31,7 @@ packages:
       ## You can enable or disable some of the features listed below.
       ## The disabled feature starts with # symbol.
       ## The indentation before uncommented package is very important!
+      ## Please note that order of packages also is very important!
       
       ## Additional WiFi signal sensor.
       - packages/common/wifi_signal.yaml
