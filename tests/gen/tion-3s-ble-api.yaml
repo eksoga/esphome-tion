@@ -39,6 +39,9 @@ packages:
   # board/seeed_c6: !include ../../packages/board/seeed_c6.yaml
   # debug: !include ../../packages/debug.yaml
   tion/3s: !include ../../packages/tion/3s.yaml
+external_components:
+  - source: ../../esphome-2025.6-patched
+    components: [ esp32_ble ]
 
 ## Uncomment to enable MQTT connection and remove api section.
 ## Do not forget to uncomment mqtt.yaml or if you plan to use SprutHub spruthub.yaml package above.
