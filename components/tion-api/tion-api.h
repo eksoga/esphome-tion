@@ -45,12 +45,17 @@ struct TionTraits {
   using ErrorsReportPtr = std::add_pointer_t<void(uint32_t errors)>;
   ErrorsReportPtr errors_report{};
 
-  // Время работы режима "Турбо" в секундах.
-  uint16_t boost_time;
-  // <0 - текущий режим работы, =0 - обогрев выключен, >0 - обогрев включен.
-  int8_t boost_heater_state;
-  // 0 - используем текущую целевую температуру.
-  int8_t boost_target_temperature;
+  struct {
+    // Время работы режима "Турбо" в секундах.
+    uint16_t time;
+    // <0 - текущий режим работы, =0 - обогрев выключен, >0 - обогрев включен.
+    int8_t heater_state;
+    // <0 - используем текущую целевую температуру.
+    int8_t target_temperature;
+    bool has_heater_state() const { return this->heater_state >= 0; }
+    bool has_target_temperature() const { return this->target_temperature >= 0; }
+    bool get_heater_state() const { return this->heater_state > 0; }
+  } boost;
 
   // Максимальная скорость вентиляции.
   uint8_t max_fan_speed;
@@ -267,7 +272,18 @@ class TionApiBase {
     void to_call(TionStateCall *call) const;
     void from_state(const TionState &state);
     bool is_filled() const;
-    bool check(const char *name, const TionTraits &traits) const;
+    // проверка на is_filled и валидности по traits.
+    bool is_valid(const char *name, const TionTraits &traits) const;
+
+    bool has_target_temperature() const { return this->target_temperature >= 0; }
+    bool has_heater_state() const { return this->heater_state >= 0; }
+    bool has_power_state() const { return this->power_state >= 0; }
+    bool has_fan_speed() const { return this->fan_speed >= 0; }
+    bool has_gate_position() const { return this->gate_position != TionGatePosition::UNKNOWN; }
+    bool has_auto_state() const { return this->auto_state >= 0; }
+
+    // проверка относительно состояния
+    bool is_modified(const TionState &st) const;
   };
 
   using on_ready_type = etl::delegate<void()>;

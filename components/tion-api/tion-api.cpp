@@ -388,7 +388,7 @@ void TionStateCall::reset() {
 }
 
 TionApiBase::TionApiBase() : auto_pi_(TION_AUTO_KP, TION_AUTO_TI, TION_AUTO_DB) {
-  this->traits_.boost_time = TION_BOOST_TIME;
+  this->traits_.boost.time = TION_BOOST_TIME;
 }
 
 void TionApiBase::notify_state_(uint32_t request_id) {
@@ -408,8 +408,8 @@ void TionApiBase::notify_state_(uint32_t request_id) {
       // только если натив буст не поддерживается
       if (!this->traits_.supports_boost) {
         const auto boost_work_time = this->state_.work_time - this->boost_save_.start_time;
-        if (boost_work_time < this->traits_.boost_time) {
-          this->state_.boost_time_left = this->traits_.boost_time - boost_work_time;
+        if (boost_work_time < this->traits_.boost.time) {
+          this->state_.boost_time_left = this->traits_.boost.time - boost_work_time;
         } else {
           if (call == nullptr) {
             call = new TionStateCall(this);
@@ -422,28 +422,7 @@ void TionApiBase::notify_state_(uint32_t request_id) {
   }
 
   if (this->active_preset_ != PRESET_NONE) {
-    auto is_preset_modified = [](const PresetData &pr, const TionState &st) -> bool {
-      if (pr.power_state >= 0 && pr.power_state != st.power_state) {
-        return true;
-      }
-      if (pr.heater_state >= 0 && pr.heater_state != st.heater_state) {
-        return true;
-      }
-      if (pr.fan_speed > 0 && pr.fan_speed != st.fan_speed) {
-        return true;
-      }
-      if (pr.target_temperature != 0 && pr.target_temperature != st.target_temperature) {
-        return true;
-      }
-      if (pr.gate_position != TionGatePosition::NONE && pr.gate_position != st.gate_position) {
-        return true;
-      }
-      if (pr.auto_state >= 0 && pr.auto_state != st.auto_state) {
-        return true;
-      }
-      return false;
-    };
-    if (is_preset_modified(this->presets_[this->active_preset_], this->state_)) {
+    if (this->presets_[this->active_preset_].is_modified(this->state_)) {
       this->active_preset_ = PRESET_NONE;
     }
   }
@@ -469,19 +448,19 @@ void TionApiBase::notify_state_(uint32_t request_id) {
 
 void TionApiBase::set_boost_time(uint16_t boost_time) {
   TION_LOGD(TAG, "New boost time: %u s", boost_time);
-  this->traits_.boost_time = boost_time;
+  this->traits_.boost.time = boost_time;
 }
 
 void TionApiBase::set_boost_heater_state(bool heater_state) {
   const int8_t st = heater_state ? 1 : 0;
-  if (this->traits_.boost_heater_state != st) {
+  if (!this->traits_.boost.has_heater_state() || this->traits_.boost.get_heater_state() != st) {
     TION_LOGD(TAG, "New boost heater state: %s", ONOFF(heater_state));
-    this->traits_.boost_heater_state = st;
+    this->traits_.boost.heater_state = st;
   }
 }
 
 void TionApiBase::set_boost_target_temperature(int8_t target_temperature) {
-  if (this->traits_.boost_target_temperature != target_temperature) {
+  if (!this->traits_.boost.has_target_temperature() || this->traits_.boost.target_temperature != target_temperature) {
     if (target_temperature < this->traits_.min_target_temperature ||
         target_temperature > this->traits_.max_target_temperature) {
       TION_LOGW(TAG, "Boost target temperature is out of range %d:%d °C", this->traits_.min_target_temperature,
@@ -489,7 +468,7 @@ void TionApiBase::set_boost_target_temperature(int8_t target_temperature) {
       return;
     }
     TION_LOGD(TAG, "New boost target temperature: %d °C", target_temperature);
-    this->traits_.boost_target_temperature = target_temperature;
+    this->traits_.boost.target_temperature = target_temperature;
   }
 }
 
@@ -510,7 +489,7 @@ void TionApiBase::enable_boost(bool state, TionStateCall *call) {
     return;
   }
 
-  const uint16_t new_boost_time = state ? this->traits_.boost_time : 0U;
+  const uint16_t new_boost_time = state ? this->traits_.boost.time : 0U;
   this->enable_boost(new_boost_time, call);
 }
 
@@ -555,11 +534,11 @@ void TionApiBase::boost_enable_(uint16_t boost_time, TionStateCall *call) {
   call->set_power_state(true);
   call->set_fan_speed(this->traits_.max_fan_speed);
   call->set_gate_position(TionGatePosition::OUTDOOR);
-  if (this->traits_.boost_heater_state >= 0) {
-    call->set_heater_state(this->traits_.boost_heater_state > 0);
+  if (this->traits_.boost.has_heater_state()) {
+    call->set_heater_state(this->traits_.boost.get_heater_state());
   }
-  if (this->traits_.boost_target_temperature != 0) {
-    call->set_target_temperature(this->traits_.boost_target_temperature);
+  if (this->traits_.boost.has_target_temperature()) {
+    call->set_target_temperature(this->traits_.boost.target_temperature);
   }
   // дополнительно оставим авто-режим в текущем положении
   call->set_auto_state(this->state_.auto_state);
@@ -584,37 +563,41 @@ void TionApiBase::PresetData::to_call(TionStateCall *call) const {
     INVALID_STATE_CALL();
     return;
   }
-  if (this->power_state >= 0) {
+  if (this->has_power_state()) {
     call->set_power_state(this->power_state > 0);
   }
-  if (this->heater_state >= 0) {
+  if (this->has_heater_state()) {
     call->set_heater_state(this->heater_state > 0);
   }
-  if (this->fan_speed >= 0) {
+  if (this->has_fan_speed()) {
     call->set_fan_speed(this->fan_speed);
   }
-  if (this->target_temperature >= 0) {
+  if (this->has_target_temperature()) {
     call->set_target_temperature(this->target_temperature);
   }
-  if (this->gate_position != TionGatePosition::UNKNOWN) {
+  if (this->has_gate_position()) {
     call->set_gate_position(this->gate_position);
   }
-  if (this->auto_state >= 0) {
+  if (this->has_auto_state()) {
     call->set_auto_state(this->auto_state > 0);
   }
 }
 
 bool TionApiBase::PresetData::is_filled() const {
-  return this->power_state >= 0 || this->fan_speed >= 0 || this->heater_state >= 0 || this->target_temperature >= 0 ||
-         this->auto_state >= 0 || this->gate_position != TionGatePosition::UNKNOWN;
+  return this->has_power_state() ||         //
+         this->has_fan_speed() ||           //
+         this->has_heater_state() ||        //
+         this->has_target_temperature() ||  //
+         this->has_auto_state() ||          //
+         this->has_gate_position();
 }
 
-bool TionApiBase::PresetData::check(const char *name, const TionTraits &traits) const {
+bool TionApiBase::PresetData::is_valid(const char *name, const TionTraits &traits) const {
   if (!this->is_filled()) {
     TION_LOGW(TAG, "Preset '%s' has no data to change", name);
     return false;
   }
-  if (this->target_temperature >= 0 && this->target_temperature < traits.min_target_temperature) {
+  if (this->has_target_temperature() && this->target_temperature < traits.min_target_temperature) {
     TION_LOGW(TAG, "Preset '%s' has invalid target temperature %d", name, this->target_temperature);
     return false;
   }
@@ -623,6 +606,28 @@ bool TionApiBase::PresetData::check(const char *name, const TionTraits &traits) 
     return false;
   }
   return true;
+}
+
+bool TionApiBase::PresetData::is_modified(const TionState &st) const {
+  if (this->has_power_state() && this->power_state != st.power_state) {
+    return true;
+  }
+  if (this->has_heater_state() && this->heater_state != st.heater_state) {
+    return true;
+  }
+  if (this->has_fan_speed() && this->fan_speed != st.fan_speed) {
+    return true;
+  }
+  if (this->has_target_temperature() && this->target_temperature != st.target_temperature) {
+    return true;
+  }
+  if (this->has_gate_position() && this->gate_position != st.gate_position) {
+    return true;
+  }
+  if (this->has_auto_state() && this->auto_state != st.auto_state) {
+    return true;
+  }
+  return false;
 }
 
 void TionApiBase::boost_cancel_(TionStateCall *call) {
@@ -675,7 +680,7 @@ void TionApiBase::add_preset(const std::string &name, const PresetData &data) {
     TION_LOGW(TAG, "Skip reserved preset 'none'");
     return;
   }
-  if (!data.check(name.c_str(), this->traits_)) {
+  if (!data.is_valid(name.c_str(), this->traits_)) {
     return;
   }
   TION_LOGD(TAG, "Setup preset '%s': power=%d, heat=%d, fan=%u, temp=%d, gate=%u", name.c_str(), data.power_state,

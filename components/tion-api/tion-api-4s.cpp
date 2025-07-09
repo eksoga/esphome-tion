@@ -483,7 +483,7 @@ void Tion4sApi::boost_enable_native_(bool state) {
     return;
   }
   TION_LOGD(TAG, "Enable native boost: %s", ONOFF(state));
-  this->set_turbo(this->traits_.boost_time, ++this->request_id_);
+  this->set_turbo(this->traits_.boost.time, ++this->request_id_);
 }
 
 }  // namespace tion_4s

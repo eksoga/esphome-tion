@@ -448,7 +448,7 @@ struct TargetTemperature : public sensor::TargetTemperature {
 };
 
 struct BoostTime {
-  static uint8_t get(TionApiComponent *c) { return c->traits().boost_time / 60; }
+  static uint8_t get(TionApiComponent *c) { return c->traits().boost.time / 60; }
   static void set(TionApiComponent *c, uint8_t state) { c->api()->set_boost_time(state * 60); }
 
   static constexpr uint8_t get_min(TionApiComponent *c) { return 1; }
