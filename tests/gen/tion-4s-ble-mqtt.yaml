@@ -202,21 +202,21 @@ sensor:
     id: co2_value
     lambda: return 800;
   ## Additional test-only entities
-  - { platform: tion, name: None, type: fan_speed }
-  - { platform: tion, name: None, type: current_temperature }
-  - { platform: tion, name: None, type: target_temperature }
-  - { platform: tion, name: None, type: power }
-  - { platform: tion, name: None, type: heater_var }
-  - { platform: tion, name: None, type: fan_power }
-  - { platform: tion, name: None, type: airflow }
-  - { platform: tion, name: None, type: filter_time_left }
-  - { platform: tion, name: None, type: work_time }
-  - { platform: tion, name: None, type: work_time_days }
-  - { platform: tion, name: None, type: fan_time }
-  - { platform: tion, name: None, type: fan_time_days }
-  - { platform: tion, name: None, type: airflow_counter }
-  - { platform: tion, name: None, type: pcb_ctl_temperature }
-  - { platform: tion, name: None, type: pcb_pwr_temperature }
+  - { platform: tion, name: sensor_fan_speed, type: fan_speed }
+  - { platform: tion, name: sensor_current_temperature, type: current_temperature }
+  - { platform: tion, name: sensor_target_temperature, type: target_temperature }
+  - { platform: tion, name: sensor_power, type: power }
+  - { platform: tion, name: sensor_heater_var, type: heater_var }
+  - { platform: tion, name: sensor_fan_power, type: fan_power }
+  - { platform: tion, name: sensor_airflow, type: airflow }
+  - { platform: tion, name: sensor_filter_time_left, type: filter_time_left }
+  - { platform: tion, name: sensor_work_time, type: work_time }
+  - { platform: tion, name: sensor_work_time_days, type: work_time_days }
+  - { platform: tion, name: sensor_fan_time, type: fan_time }
+  - { platform: tion, name: sensor_fan_time_days, type: fan_time_days }
+  - { platform: tion, name: sensor_airflow_counter, type: airflow_counter }
+  - { platform: tion, name: sensor_pcb_ctl_temperature, type: pcb_ctl_temperature }
+  - { platform: tion, name: sensor_pcb_pwr_temperature, type: pcb_pwr_temperature }
 
 switch:
   ## Buzzer control switch.
@@ -245,9 +245,9 @@ switch:
     ##           If not set or set to 0 - current target temperature will be used.
     #temperature: 10
   ## Additional test-only entities
-  - { platform: tion, name: None, type: power }
-  - { platform: tion, name: None, type: heater }
-  - { platform: tion, name: None, type: auto }
+  - { platform: tion, name: switch_power, type: power }
+  - { platform: tion, name: switch_heater, type: heater }
+  - { platform: tion, name: switch_auto, type: auto }
 
 number:
   ## Configure boost time.
@@ -258,13 +258,13 @@ number:
     initial_value: 20min
     restore_value: True
   ## Additional test-only entities
-  - { platform: tion, name: None, type: fan_speed }
-  - { platform: tion, name: None, type: target_temperature }
+  - { platform: tion, name: number_fan_speed, type: fan_speed }
+  - { platform: tion, name: number_target_temperature, type: target_temperature }
   ## Additional test-only entities
 select:
-  - { platform: tion, name: None, type: air_intake }
-  - { platform: tion, name: None, type: presets }
-  - { platform: tion, name: None, type: fan_speed }
+  - { platform: tion, name: select_air_intake, type: air_intake }
+  - { platform: tion, name: select_presets, type: presets }
+  - { platform: tion, name: select_fan_speed, type: fan_speed }
 
 binary_sensor:
   ## Informs about state receiving problem from the breezer.
@@ -278,14 +278,14 @@ binary_sensor:
     type: filter
     name: Filter Worn Out
   ## Additional test-only entities
-  - { platform: tion, name: None, type: power }
-  - { platform: tion, name: None, type: heater }
-  - { platform: tion, name: None, type: heating }
-  - { platform: tion, name: None, type: sound }
-  - { platform: tion, name: None, type: led }
-  - { platform: tion, name: None, type: gate_error }
-  - { platform: tion, name: None, type: error }
-  - { platform: tion, name: None, type: boost }
+  - { platform: tion, name: binary_sensor_power, type: power }
+  - { platform: tion, name: binary_sensor_heater, type: heater }
+  - { platform: tion, name: binary_sensor_heating, type: heating }
+  - { platform: tion, name: binary_sensor_sound, type: sound }
+  - { platform: tion, name: binary_sensor_led, type: led }
+  - { platform: tion, name: binary_sensor_gate_error, type: gate_error }
+  - { platform: tion, name: binary_sensor_error, type: error }
+  - { platform: tion, name: binary_sensor_boost, type: boost }
 
 text_sensor:
   ## Tion firmware version.
@@ -300,7 +300,7 @@ text_sensor:
     type: errors
     name: Errors
   ## Additional test-only entities
-  - { platform: tion, name: None, type: hardware_version }
+  - { platform: tion, name: text_sensor_hardware_version, type: hardware_version }
 
 button:
   ## Reset filter button.
