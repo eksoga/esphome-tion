@@ -2,6 +2,7 @@
 #include <ctime>
 
 #include "esphome/core/log.h"
+#include "esphome/core/version.h"
 #include "tion_component.h"
 
 namespace esphome {
@@ -43,7 +44,11 @@ void TionApiComponent::call_setup() {
 void TionApiComponent::call_loop() { PollingComponent::call_loop(); }
 
 void TionApiComponent::dump_config() {
+#if ESPHOME_VERSION_CODE < VERSION_CODE(2025, 9, 0)
   ESP_LOGCONFIG(TAG, "%s:", this->get_component_source());
+#else
+  ESP_LOGCONFIG(TAG, "%s:", LOG_STR_ARG(this->get_component_log_str()));
+#endif
   LOG_UPDATE_INTERVAL(this);
   ESP_LOGCONFIG(TAG, "  Force update: %s", ONOFF(this->force_update_));
   ESP_LOGCONFIG(TAG, "  State timeout: %.1f s", this->state_timeout_ * 0.001f);

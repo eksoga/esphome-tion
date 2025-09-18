@@ -19,6 +19,9 @@ from esphome.const import (
     CONF_TYPE,
     CONF_VALUE,
 )
+from esphome.const import (
+    __version__ as ESPHOME_VERSION,
+)
 from esphome.core import ID
 from esphome.cpp_generator import MockObjClass
 
@@ -179,7 +182,14 @@ async def _setup_tion_api(config: dict):
     var = cg.new_Pvariable(config[CONF_ID], api, prt.get_type())
     await cg.register_component(var, config)
 
-    cg.add(var.set_component_source(f"tion[type={config[CONF_TYPE]}]"))
+    component_source = f"tion[type={config[CONF_TYPE]}]"
+
+    if cv.Version.parse(ESPHOME_VERSION) >= cv.Version.parse("2025.9.0"):
+        from esphome.cpp_generator import LogStringLiteral
+
+        component_source = LogStringLiteral(component_source)
+
+    cg.add(var.set_component_source(component_source))
 
     # cg.add_library("tion-api", None, "https://github.com/dentra/tion-api")
     cg.add_build_flag("-DTION_ESPHOME")
