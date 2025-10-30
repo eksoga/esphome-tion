@@ -135,6 +135,9 @@ vport:
     ## Optional, Interval between sending heartbeat commands. Default: 5s.
     # heartbeat_interval: 5s
     {%- endif %}
+    {%- port == "ble" %}
+    connection_timeout: 5s
+    {%- endif %}
 
 ## Main climate component configuration.
 ## See detailed description and additional parameters at CONFIGURATION.md
