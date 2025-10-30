@@ -117,10 +117,6 @@ void Tion4sApi::read_frame(uint16_t frame_type, const void *frame_data, size_t f
 
   if (frame_type == FRAME_TYPE_TURBO_RSP) {
     using RawTurboFrame = tion4s_raw_frame_t<tion4s_turbo_t>;
-    // struct RawTurboFrame {
-    //   uint32_t request_id;
-    //   tion4s_turbo_t data;
-    // } PACKED;
     if (frame_data_size != sizeof(RawTurboFrame)) {
       TION_LOGW(TAG, "Incorrect turbo response data size: %zu", frame_data_size);
     } else {
@@ -144,10 +140,6 @@ void Tion4sApi::read_frame(uint16_t frame_type, const void *frame_data, size_t f
 #ifdef TION_ENABLE_SCHEDULER
   if (frame_type == FRAME_TYPE_TIME_RSP) {
     using RawTimeFrame = tion4s_raw_frame_t<tion4s_time_t>;
-    // struct RawTimeFrame {
-    //   uint32_t request_id;
-    //   tion4s_time_t data;
-    // } PACKED;
     if (frame_data_size != sizeof(RawTimeFrame)) {
       TION_LOGW(TAG, "Incorrect time response data size: %zu", frame_data_size);
     } else {
@@ -160,11 +152,6 @@ void Tion4sApi::read_frame(uint16_t frame_type, const void *frame_data, size_t f
 
   if (frame_type == FRAME_TYPE_TIMER_RSP) {
     using RawTimerFrame = tion4s_raw_frame_t<tion4s_timer_rsp_t>;
-    // struct RawTimerFrame {
-    //   uint32_t request_id;
-    //   uint8_t timer_id;
-    //   tion4s_timer_t timer;
-    // } PACKED;
     if (frame_data_size != sizeof(RawTimerFrame)) {
       TION_LOGW(TAG, "Incorrect timer response data size: %zu", frame_data_size);
     } else {
@@ -177,10 +164,6 @@ void Tion4sApi::read_frame(uint16_t frame_type, const void *frame_data, size_t f
 
   if (frame_type == FRAME_TYPE_TIMERS_STATE_RSP) {
     using RawTimersStateFrame = tion4s_raw_frame_t<tion4s_timers_state_t>;
-    // struct RawTimersStateFrame {
-    //   uint32_t request_id;
-    //   tion4s_timers_state_t data;
-    // } PACKED;
     if (frame_data_size != sizeof(RawTimersStateFrame)) {
       TION_LOGW(TAG, "Incorrect timers state response data size: %zu", frame_data_size);
     } else {
@@ -194,10 +177,6 @@ void Tion4sApi::read_frame(uint16_t frame_type, const void *frame_data, size_t f
 #ifdef TION_ENABLE_DIAGNOSTIC
   if (frame_type == FRAME_TYPE_ERR_CNT_RSP) {
     using RawErrorFrame = tion4s_raw_frame_t<tion4s_errors_t>;
-    // struct RawErrorFrame {
-    //   uint32_t request_id;
-    //   tion4s_errors_t data;
-    // } PACKED;
     if (frame_data_size != sizeof(RawErrorFrame)) {
       TION_LOGW(TAG, "Incorrect error response data size: %zu", frame_data_size);
     } else {
