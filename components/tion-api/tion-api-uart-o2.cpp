@@ -16,7 +16,7 @@ TionO2UartProtocol::TionO2UartProtocol(bool is_proxy) {
 }
 
 void TionO2UartProtocol::read_uart_data(tion::TionUartReader *io) {
-  if (!this->reader) {
+  if (!this->reader_) {
     TION_LOGE(TAG, "Reader is not configured");
     return;
   }
@@ -76,13 +76,13 @@ int TionO2UartProtocol::read_frame_(tion::TionUartReader *io) {
   }
 
   TION_LOGV(TAG, "RX: [%02X]:%s", frame->type, tion::hex_cstr(frame->data, data_size));
-  this->reader(*frame, data_size + frame->head_size());
+  this->reader_(*frame, data_size + frame->head_size());
   this->frame_size_ = 0;
   return READ_NEXT_LOOP;
 }
 
 bool TionO2UartProtocol::write_frame(uint16_t frame_type, const void *frame_data, size_t frame_data_size) {
-  if (!this->writer) {
+  if (!this->writer_) {
     TION_LOGE(TAG, "Writer is not configured");
     return false;
   }
@@ -109,7 +109,7 @@ bool TionO2UartProtocol::write_frame(uint16_t frame_type, const void *frame_data
 
   TION_LOGV(TAG, "TX: %s", tion::hex_cstr(frame_buf, frame_size));
 
-  return this->writer(frame_buf, frame_size);
+  return this->writer_(frame_buf, frame_size);
 }
 
 uint8_t TionO2UartProtocol::crc(uint8_t init, const void *data, size_t size) const {

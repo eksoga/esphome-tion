@@ -25,7 +25,7 @@ template<class api_t> class TionComponentTest {
   using api_type = api_t;
   TionComponentTest(api_t *api) : api_(api) {
     using this_t = typename std::remove_pointer_t<decltype(this)>;
-    api->set_on_ready(api_t::on_ready_type::template create<this_t, &this_t::ready_>(*this));
+    api->set_on_ready([this]() { this->ready_(); });
   }
 
   bool is_ready() { return this->is_ready_; }

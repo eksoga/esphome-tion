@@ -97,7 +97,9 @@ void Tion4sApi::read_frame(uint16_t frame_type, const void *frame_data, size_t f
     } else {
       auto *frame = static_cast<const RawHeartbeatFrame *>(frame_data);
       TION_LOGD(TAG, "Response Heartbeat (%u)", frame->work_mode);
-      this->on_heartbeat_fn.call_if(frame->work_mode);
+      if (this->on_heartbeat_) {
+        this->on_heartbeat_(frame->work_mode);
+      }
     }
     return;
   }
@@ -123,7 +125,9 @@ void Tion4sApi::read_frame(uint16_t frame_type, const void *frame_data, size_t f
       auto *frame = static_cast<const RawTurboFrame *>(frame_data);
       TION_LOGD(TAG, "Response[%" PRIu32 "] Turbo", frame->request_id);
       this->update_turbo_(frame->data);
-      this->on_turbo.call_if(frame->data, frame->request_id);
+      if (this->on_turbo_) {
+        this->on_turbo_(frame->data, frame->request_id);
+      }
     }
     return;
   }
@@ -145,7 +149,9 @@ void Tion4sApi::read_frame(uint16_t frame_type, const void *frame_data, size_t f
     } else {
       auto *frame = static_cast<const RawTimeFrame *>(frame_data);
       TION_LOGD(TAG, "Response[%" PRIu32 "] Time", frame->request_id);
-      this->on_time.call_if(frame->data.unix_time, frame->request_id);
+      if (this->on_time_) {
+        this->on_time_(frame->data.unix_time, frame->request_id);
+      }
     }
     return;
   }
@@ -157,7 +163,9 @@ void Tion4sApi::read_frame(uint16_t frame_type, const void *frame_data, size_t f
     } else {
       auto *frame = static_cast<const RawTimerFrame *>(frame_data);
       TION_LOGD(TAG, "Response[%" PRIu32 "] Timer %u", frame->request_id, frame->data.timer_id);
-      this->on_timer.call_if(frame->data.timer_id, frame->data.timer, frame->request_id);
+      if (this->on_timer_) {
+        this->on_timer_(frame->data.timer_id, frame->data.timer, frame->request_id);
+      }
     }
     return;
   }
@@ -169,7 +177,9 @@ void Tion4sApi::read_frame(uint16_t frame_type, const void *frame_data, size_t f
     } else {
       auto *frame = static_cast<const RawTimersStateFrame *>(frame_data);
       TION_LOGD(TAG, "Response[%" PRIu32 "] Timers state", frame->request_id);
-      this->on_timers_state.call_if(frame->data, frame->request_id);
+      if (this->on_timers_state_) {
+        this->on_timers_state_(frame->data, frame->request_id);
+      }
     }
     return;
   }

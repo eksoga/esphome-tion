@@ -10,14 +10,14 @@ namespace tion_4s {
 
 class Tion4sApi : public tion::TionApiBase, public tion::TionApiWriter {
   /// Callback listener for response to request_turbo command request.
-  using on_turbo_type = etl::delegate<void(const tion4s_turbo_t &turbo, uint32_t request_id)>;
+  using on_turbo_type = std::function<void(const tion4s_turbo_t &turbo, uint32_t request_id)>;
 #ifdef TION_ENABLE_SCHEDULER
   /// Callback listener for response to request_time command request.
-  using on_time_type = etl::delegate<void(time_t time, uint32_t request_id)>;
+  using on_time_type = std::function<void(time_t time, uint32_t request_id)>;
   /// Callback listener for response to request_timer command request.
-  using on_timer_type = etl::delegate<void(uint8_t timer_id, const tion4s_timer_t &timers_state, uint32_t request_id)>;
+  using on_timer_type = std::function<void(uint8_t timer_id, const tion4s_timer_t &timers_state, uint32_t request_id)>;
   /// Callback listener for response to request_timers_state command request.
-  using on_timers_state_type = etl::delegate<void(const tion4s_timers_state_t &timers_state, uint32_t request_id)>;
+  using on_timers_state_type = std::function<void(const tion4s_timers_state_t &timers_state, uint32_t request_id)>;
 #endif
 
  public:
@@ -33,7 +33,7 @@ class Tion4sApi : public tion::TionApiBase, public tion::TionApiWriter {
   bool reset_errors(const tion::TionState &state, uint32_t request_id = 1) const;
 
   /// Callback listener for response to request_turbo command request.
-  on_turbo_type on_turbo{};
+  void set_on_turbo(on_turbo_type &&cb) { this->on_turbo_ = std::move(cb); }
   bool set_turbo(uint16_t time, uint32_t request_id = 1) const;
   bool request_turbo() const { return this->request_turbo_(); }
 
@@ -46,11 +46,11 @@ class Tion4sApi : public tion::TionApiBase, public tion::TionApiWriter {
   void request_time() { this->request_time(++this->request_id_); }
 
   /// Callback listener for response to request_time command request.
-  on_time_type on_time{};
+  void set_on_time(on_time_type &&cb) { this->on_time_ = std::move(cb); }
   bool set_time(time_t time, uint32_t request_id) const;
 
   /// Callback listener for response to request_timer command request.
-  on_timer_type on_timer{};
+  void set_on_timer(on_timer_type &&cb) { this->on_timer_ = std::move(cb); }
   bool request_timer(uint8_t timer_id, uint32_t request_id) const;
   void request_timer(uint8_t timer_id) { this->request_timer(timer_id, ++this->request_id_); }
 
@@ -65,7 +65,7 @@ class Tion4sApi : public tion::TionApiBase, public tion::TionApiWriter {
   bool request_timers_state(uint32_t request_id) const;
   void request_timers_state() { this->request_timers_state(++this->request_id_); }
   /// Callback listener for response to request_timers_state command request.
-  on_timers_state_type on_timers_state{};
+  void set_on_timers_state(on_timers_state_type &&cb) { this->on_timers_state_ = std::move(cb); }
 
 #endif
 #ifdef TION_ENABLE_DIAGNOSTIC
@@ -81,6 +81,13 @@ class Tion4sApi : public tion::TionApiBase, public tion::TionApiWriter {
   void reset_filter() override { this->reset_filter(this->state_, ++this->request_id_); }
 
  protected:
+  on_turbo_type on_turbo_{};
+#ifdef TION_ENABLE_SCHEDULER
+  on_time_type on_time_{};
+  on_timer_type on_timer_{};
+  on_timers_state_type on_timers_state_{};
+#endif
+
   void boost_enable_native_(bool state) override;
 
   bool request_turbo_() const;

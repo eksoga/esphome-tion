@@ -26,7 +26,7 @@ class Tion3sBleIO : public TionBleIO<dentra::tion::Tion3sBleProtocol> {
 class Tion3sBleVPort : public TionVPortBLEComponent<Tion3sBleIO> {
  public:
   Tion3sBleVPort(io_type *io) : TionVPortBLEComponent(io) {
-    this->io_->set_on_ready(io_type::on_ready_type::create<Tion3sBleVPort, &Tion3sBleVPort::on_ready_3s_>(*this));
+    this->io_->set_on_ready([this]() { this->on_ready_3s_(); });
   }
 
   void setup() override;

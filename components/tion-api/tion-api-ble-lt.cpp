@@ -88,7 +88,7 @@ bool TionLtBleProtocol::read_data(const uint8_t *data, size_t size) {
 // TODO remove return type
 bool TionLtBleProtocol::read_frame_(const void *data, uint32_t size) {
   TION_LOGV(TAG, "Read frame: %s", hex_cstr(data, size));
-  if (!this->reader) {
+  if (!this->reader_) {
     TION_LOGE(TAG, "Reader is not configured");
     return false;
   }
@@ -109,8 +109,8 @@ bool TionLtBleProtocol::read_frame_(const void *data, uint32_t size) {
       return false;
     }
   }
-  this->reader(*reinterpret_cast<const tion_any_ble_frame_t *>(&frame->data),
-               frame->size - sizeof(TionLtRawBleFrame) + sizeof(tion_any_ble_frame_t));
+  this->reader_(*reinterpret_cast<const tion_any_ble_frame_t *>(&frame->data),
+                frame->size - sizeof(TionLtRawBleFrame) + sizeof(tion_any_ble_frame_t));
   return true;
 }
 
@@ -136,7 +136,7 @@ bool TionLtBleProtocol::write_frame(uint16_t frame_type, const void *frame_data,
 bool TionLtBleProtocol::write_packet_(const void *data, uint16_t size) const {
   TION_LOGV(TAG, "Write BLE packet: %s", hex_cstr(data, size));
 
-  if (!this->writer) {
+  if (!this->writer_) {
     TION_LOGE(TAG, "Writer is not configured");
     return false;
   }
@@ -152,7 +152,7 @@ bool TionLtBleProtocol::write_packet_(const void *data, uint16_t size) const {
   std::memcpy(pkt.data, data_ptr, data_packet_size);
   data_ptr += data_packet_size;
 
-  if (!this->writer(reinterpret_cast<uint8_t *>(&pkt), data_packet_size + sizeof(pkt.type))) {
+  if (!this->writer_(reinterpret_cast<uint8_t *>(&pkt), data_packet_size + sizeof(pkt.type))) {
     TION_LOGW(TAG, "Can't write packet");
     return false;
   }
@@ -164,7 +164,7 @@ bool TionLtBleProtocol::write_packet_(const void *data, uint16_t size) const {
     std::memcpy(pkt.data, data_ptr, data_packet_size);
     data_ptr += data_packet_size;
 
-    if (!this->writer(reinterpret_cast<uint8_t *>(&pkt), data_packet_size + sizeof(pkt.type))) {
+    if (!this->writer_(reinterpret_cast<uint8_t *>(&pkt), data_packet_size + sizeof(pkt.type))) {
       TION_LOGW(TAG, "Can't write packet");
       return false;
     }

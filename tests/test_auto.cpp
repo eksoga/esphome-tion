@@ -39,7 +39,9 @@ class Tion4sUartVPortApiTest : public TionUartVPortApi {
     if (type == dentra::tion_4s::FRAME_TYPE_STATE_SET && size == sizeof(tion4s_raw_state_set_req_t)) {
       const auto *req = static_cast<const tion4s_raw_state_set_req_t *>(data);
       this->state_.auto_state = req->data.ma_connected;
-      this->on_state_fn.call_if(this->state_, req->request_id);
+      if (this->on_state_) {
+        this->on_state_(this->state_, req->request_id);
+      }
     }
 
     return true;

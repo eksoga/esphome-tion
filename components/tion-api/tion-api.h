@@ -5,8 +5,7 @@
 #include <set>
 #include <vector>
 #include <type_traits>
-
-#include <etl/delegate.h>
+#include <functional>
 
 #include "tion-api-defines.h"
 #include "utils.h"
@@ -245,11 +244,6 @@ std::string decode_errors(uint32_t errors, uint8_t error_min_bit, uint8_t error_
                           uint8_t warning_max_bit);
 
 class TionApiBase {
-  /// Callback listener for response to request_state command request.
-  using on_state_type = etl::delegate<void(const TionState &state, uint32_t request_id)>;
-  /// Callback listener for response to send_heartbeat command request.
-  using on_heartbeat_type = etl::delegate<void(uint8_t work_mode)>;
-
  public:
   TionApiBase();
 
@@ -286,14 +280,18 @@ class TionApiBase {
     bool is_modified(const TionState &st) const;
   };
 
-  using on_ready_type = etl::delegate<void()>;
+  using on_ready_type = std::function<void()>;
   /// Set callback listener for monitoring ready state
-  void set_on_ready(on_ready_type &&on_ready) { this->on_ready_fn = on_ready; }
+  void set_on_ready(on_ready_type &&on_ready) { this->on_ready_ = std::move(on_ready); }
 
-  on_ready_type on_ready_fn{};
-  on_state_type on_state_fn{};
+  /// Callback listener for response to request_state command request.
+  using on_state_type = std::function<void(const TionState &state, uint32_t request_id)>;
+  void set_on_state(on_state_type &&on_state) { this->on_state_ = std::move(on_state); }
+
 #ifdef TION_ENABLE_HEARTBEAT
-  on_heartbeat_type on_heartbeat_fn{};
+  /// Callback listener for response to send_heartbeat command request.
+  using on_heartbeat_type = std::function<void(uint8_t work_mode)>;
+  void set_on_heartbeat(on_heartbeat_type &&on_heartbeat) { this->on_heartbeat_ = std::move(on_heartbeat); }
 #endif
 
   // Returns last received state.
@@ -352,6 +350,12 @@ class TionApiBase {
   uint8_t auto_min_fan_speed_{};
   uint8_t auto_max_fan_speed_{};
   std::function<uint8_t(uint16_t current)> auto_update_func_;
+
+  on_ready_type on_ready_{};
+  on_state_type on_state_{};
+#ifdef TION_ENABLE_HEARTBEAT
+  on_heartbeat_type on_heartbeat_{};
+#endif
 
   void notify_state_(uint32_t request_id);
   virtual void boost_enable_native_(bool state) {}

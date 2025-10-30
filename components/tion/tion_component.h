@@ -50,7 +50,8 @@ class TionApiComponent : public PollingComponent {
 
  public:
   explicit TionApiComponent(TionApiBase *api) : api_(api), batch_call_(this) {
-    api->on_state_fn.set<TionApiComponent, &TionApiComponent::on_state_>(*this);
+    api->set_on_state(
+        [this](const TionState &state, const uint32_t request_id) { this->on_state_(state, request_id); });
   }
 
   void dump_config() override;
@@ -187,9 +188,13 @@ class Tion4sApiComponent : public TionApiComponentBase<dentra::tion_4s::Tion4sAp
       api->enable_native_boost_support();
     }
 #ifdef TION_ENABLE_SCHEDULER
-    this->typed_api()->on_time.set<Tion4sApiComponent, &Tion4sApiComponent::on_time>(*this);
-    this->typed_api()->on_timer.set<Tion4sApiComponent, &Tion4sApiComponent::on_timer>(*this);
-    this->typed_api()->on_timers_state.set<Tion4sApiComponent, &Tion4sApiComponent::on_timers_state>(*this);
+    this->typed_api()->set_on_time([this](time_t time, uint32_t request_id) { this->on_time(time, request_id); });
+    this->typed_api()->set_on_timer([this](uint8_t timer_id, const dentra::tion_4s::tion4s_timer_t &timer,
+                                           uint32_t request_id) { this->on_timer(timer_id, timer, request_id); });
+    this->typed_api()->set_on_timers_state(
+        [this](const dentra::tion_4s::tion4s_timers_state_t &timers_state, uint32_t request_id) {
+          this->on_timers_state(timers_state, request_id);
+        });
 #endif
   }
 #ifdef TION_ENABLE_SCHEDULER

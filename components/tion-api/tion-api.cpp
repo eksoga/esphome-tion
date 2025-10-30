@@ -455,7 +455,9 @@ void TionApiBase::notify_state_(uint32_t request_id) {
     delete call;
   }
 
-  this->on_state_fn.call_if(this->state_, request_id);
+  if (this->on_state_) {
+    this->on_state_(this->state_, request_id);
+  }
 }
 
 void TionApiBase::set_boost_time(uint16_t boost_time) {
@@ -756,7 +758,9 @@ void TionApiBase::auto_reset() {
   TION_LOGD(TAG, "Auto update settings min: %u, max: %u, setpoint: %u", this->auto_min_fan_speed_,
             this->auto_max_fan_speed_, this->auto_setpoint_);
   // сначала уведомим все сущности об изменениях
-  this->on_state_fn.call_if(this->state_, 0);
+  if (this->on_state_) {
+    this->on_state_(this->state_, 0);
+  }
   // потом уведомим авто-режим
   // здесь не проверяем auto_state, чтобы когда он включиться все уже было готово
   if (this->auto_update_func_) {

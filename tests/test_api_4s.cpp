@@ -68,7 +68,7 @@ class Tion4sUartVPortApiTest : public Tion4sUartVPortApiTestBase {
       this->state_.sound_state = req->data.sound_state;
       // add others
 
-      this->on_state_fn(this->state_, req->request_id);
+      this->on_state_(this->state_, req->request_id);
     }
     return this->write_frame_(type, data, size);
   }

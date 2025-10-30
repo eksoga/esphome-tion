@@ -33,7 +33,7 @@ const char *Tion3sBleProtocol::get_ble_char_rx() const { return "6e400003-b5a3-f
 // TODO remove return type
 bool Tion3sBleProtocol::read_data(const uint8_t *data, size_t size) {
   TION_LOGV(TAG, "Read data: %s", hex_cstr(data, size));
-  if (!this->reader) {
+  if (!this->reader_) {
     TION_LOGE(TAG, "Reader is not configured");
     return false;
   }
@@ -50,12 +50,12 @@ bool Tion3sBleProtocol::read_data(const uint8_t *data, size_t size) {
     TION_LOGW(TAG, "Invalid frame magic %02X", frame->magic);
     return false;
   }
-  this->reader(*reinterpret_cast<const tion_any_frame_t *>(&frame->data), sizeof(frame->data));
+  this->reader_(*reinterpret_cast<const tion_any_frame_t *>(&frame->data), sizeof(frame->data));
   return true;
 }
 
 bool Tion3sBleProtocol::write_frame(uint16_t frame_type, const void *frame_data, size_t frame_data_size) {
-  if (!this->writer) {
+  if (!this->writer_) {
     TION_LOGE(TAG, "Writer is not configured");
     return false;
   }
@@ -63,7 +63,7 @@ bool Tion3sBleProtocol::write_frame(uint16_t frame_type, const void *frame_data,
   if (frame_data_size <= sizeof(frame.data.data)) {
     std::memcpy(frame.data.data, frame_data, frame_data_size);
   }
-  return this->writer(reinterpret_cast<const uint8_t *>(&frame), sizeof(frame));
+  return this->writer_(reinterpret_cast<const uint8_t *>(&frame), sizeof(frame));
 }
 
 }  // namespace tion

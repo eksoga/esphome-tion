@@ -26,7 +26,7 @@ template<class protocol_type> class TionIO {
     this->protocol_.write_frame(data.type, data.data, size - frame_spec_type::head_size());
   }
 
-  void set_on_frame(on_frame_type &&reader) { protocol_.reader = std::move(reader); }
+  void set_on_frame(on_frame_type &&reader) { this->protocol_.reader_ = std::move(reader); }
 
  protected:
   protocol_type protocol_;
@@ -41,11 +41,15 @@ template<class frame_spec_t, class api_t> class TionVPortApi : public api_t, pub
 
   TionVPortApi(vport_t *vport) : vport_(vport) {
     vport->add_listener(this);
-    using this_t = std::remove_pointer_t<decltype(this)>;
-    api_t::set_writer(api_t::writer_type::template create<this_t, &this_t::write_frame_>(*this));
+    this->set_api_writer(
+        [this](uint16_t type, const void *data, size_t size) { return this->write_frame_(type, data, size); });
   }
 
-  void on_ready() override { this->on_ready_fn.call_if(); }
+  void on_ready() override {
+    if (this->on_ready_) {
+      this->on_ready_();
+    }
+  }
 
   void on_frame(const frame_spec_t &frame, size_t size) override {
     this->read_frame(frame.type, frame.data, size - frame_spec_t::head_size());

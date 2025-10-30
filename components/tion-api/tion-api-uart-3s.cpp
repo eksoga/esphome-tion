@@ -28,7 +28,7 @@ struct Tion3sRawUartFrame {
 #pragma pack(pop)
 
 void Tion3sUartProtocol::read_uart_data(TionUartReader *io) {
-  if (!this->reader) {
+  if (!this->reader_) {
     TION_LOGE(TAG, "Reader is not configured");
     return;
   }
@@ -93,14 +93,14 @@ Tion3sUartProtocol::read_frame_result_t Tion3sUartProtocol::read_frame_(TionUart
   }
 
   tion::yield();
-  this->reader(*reinterpret_cast<const tion_any_frame_t *>(&frame->data), sizeof(frame->data));
+  this->reader_(*reinterpret_cast<const tion_any_frame_t *>(&frame->data), sizeof(frame->data));
   this->reset_buf_();
 
   return READ_NEXT_LOOP;
 }
 
 bool Tion3sUartProtocol::write_frame(uint16_t frame_type, const void *frame_data, size_t frame_data_size) {
-  if (!this->writer) {
+  if (!this->writer_) {
     TION_LOGE(TAG, "Writer is not configured");
     return false;
   }
@@ -112,7 +112,7 @@ bool Tion3sUartProtocol::write_frame(uint16_t frame_type, const void *frame_data
 
   TION_LOGV(TAG, "TX: %s", tion::hex_cstr(reinterpret_cast<uint8_t *>(&frame), sizeof(frame)));
 
-  return this->writer(reinterpret_cast<uint8_t *>(&frame), sizeof(frame));
+  return this->writer_(reinterpret_cast<uint8_t *>(&frame), sizeof(frame));
 }
 
 }  // namespace tion

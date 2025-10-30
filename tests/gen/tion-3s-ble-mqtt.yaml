@@ -15,6 +15,7 @@ substitutions:
   wifi_ap_password: tion-0123-3s
   project_source: ../../components
 
+  vport_source_refresh: 0s
   project_source_refresh: 0s
 
 packages:

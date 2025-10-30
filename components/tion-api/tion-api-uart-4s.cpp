@@ -30,7 +30,7 @@ Tion4sUartProtocol::Tion4sUartProtocol()
 }
 
 void Tion4sUartProtocol::read_uart_data(TionUartReader *io) {
-  if (!this->reader) {
+  if (!this->reader_) {
     TION_LOGE(TAG, "Reader is not configured");
     return;
   }
@@ -108,14 +108,14 @@ Tion4sUartProtocol::read_frame_result_t Tion4sUartProtocol::read_frame_(TionUart
 
   tion::yield();
   auto frame_data_size = frame->size - sizeof(Tion4sRawUartFrame) + sizeof(tion_any_frame_t);
-  this->reader(*reinterpret_cast<const tion_any_frame_t *>(&frame->data), frame_data_size);
+  this->reader_(*reinterpret_cast<const tion_any_frame_t *>(&frame->data), frame_data_size);
   this->reset_buf_();
 
   return READ_NEXT_LOOP;
 }
 
 bool Tion4sUartProtocol::write_frame(uint16_t type, const void *data, size_t size) {
-  if (!this->writer) {
+  if (!this->writer_) {
     TION_LOGE(TAG, "Writer is not configured");
     return false;
   }
@@ -138,7 +138,7 @@ bool Tion4sUartProtocol::write_frame(uint16_t type, const void *data, size_t siz
 
   TION_LOGV(TAG, "TX: %s", tion::hex_cstr(frame_buf, frame_size));
 
-  return this->writer(frame_buf, frame_size);
+  return this->writer_(frame_buf, frame_size);
 }
 
 }  // namespace tion

@@ -3,15 +3,15 @@
 #pragma once
 
 #include <cinttypes>
-#include <etl/delegate.h>
+#include <functional>
 
 namespace dentra {
 namespace tion {
 
 class TionApiWriter {
  public:
-  using writer_type = etl::delegate<bool(uint16_t type, const void *data, size_t size)>;
-  void set_writer(writer_type &&writer) { this->writer_ = writer; }
+  using writer_type = std::function<bool(uint16_t type, const void *data, size_t size)>;
+  void set_api_writer(writer_type &&writer) { this->writer_ = std::move(writer); }
 
   // Write any frame data.
   bool write_frame(uint16_t type, const void *data, size_t size) const;

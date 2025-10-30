@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cinttypes>
+#include <functional>
 #include <etl/delegate.h>
 
 namespace dentra {
@@ -29,14 +30,15 @@ template<class frame_spec_t> class TionProtocol {
   using frame_spec_type = frame_spec_t;
 
   using reader_type = etl::delegate<void(const frame_spec_t &data, size_t size)>;
-  // TODO move to protected
-  reader_type reader{};
-  void set_reader(reader_type &&reader) { this->reader = reader; }
+  reader_type reader_{};
+  void set_protocol_reader(reader_type &&reader) { this->reader = std::move(reader); }
 
-  using writer_type = etl::delegate<bool(const uint8_t *data, size_t size)>;
+  using writer_type = std::function<bool(const uint8_t *data, size_t size)>;
+  void set_protocol_writer(writer_type &&writer) { this->writer_ = std::move(writer); }
+
+ protected:
   // TODO move to protected
-  writer_type writer{};
-  void set_writer(writer_type &&writer) { this->writer = writer; }
+  writer_type writer_{};
 };
 
 }  // namespace tion

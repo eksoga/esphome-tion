@@ -13,6 +13,7 @@ substitutions:
   ## WiFi Access Point password.
   wifi_ap_password: tion-0123-4s
 
+  vport_source_refresh: 0s
   project_source_refresh: 0s
 
 packages:

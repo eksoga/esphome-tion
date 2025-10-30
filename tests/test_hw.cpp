@@ -190,8 +190,8 @@ class Tion4sCompTest : public TionComponentTest<Tion4sApi> {
  public:
   Tion4sCompTest(Tion4sApi *api) : TionComponentTest(api) {
     using this_t = typename std::remove_pointer_t<decltype(this)>;
-    api->on_state_fn.set<this_t, &this_t::on_state>(*this);
-    api->on_heartbeat_fn.set<this_t, &this_t::on_heartbeat>(*this);
+    api->set_on_state([this](auto st, auto rid) { this->on_state(st, rid) });
+    api->set_on_heartbeat([this](auto work_mode) { this->on_heartbeat(wm) });
   }
   void on_state(const TionState &state, uint32_t request_id) {}
   void on_heartbeat(uint8_t work_mode) { this->api_->send_heartbeat(); }

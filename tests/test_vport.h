@@ -19,7 +19,7 @@ class TionLtBleIOTest : public esphome::tion::TionLtBleIO, public cloak::Cloak {
   explicit TionLtBleIOTest(esphome::ble_client::BLEClient *client) {
     this->set_ble_client_parent(client);
     using this_t = typename std::remove_pointer_t<decltype(this)>;
-    this->protocol_.writer.template set<this_t, &this_t::write_>(*this);
+    this->protocol_.writer_.template set<this_t, &this_t::write_>(*this);
   }
 
   void test_data_push(const uint8_t *data, size_t size) override { this->on_ble_data(data, size); }
@@ -40,7 +40,7 @@ class Tion3sBleIOTest : public esphome::tion::Tion3sBleIO, public cloak::Cloak {
   explicit Tion3sBleIOTest(esphome::ble_client::BLEClient *client) {
     this->set_ble_client_parent(client);
     using this_t = typename std::remove_pointer_t<decltype(this)>;
-    this->protocol_.writer.template set<this_t, &this_t::write_>(*this);
+    this->protocol_.writer_.template set<this_t, &this_t::write_>(*this);
   }
 
   void test_data_push(const uint8_t *data, size_t size) override { this->on_ble_data(data, size); }

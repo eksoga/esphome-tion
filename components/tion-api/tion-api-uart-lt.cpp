@@ -131,7 +131,7 @@ static const uint8_t PROD[] = {0, TION_LT_AUTO_PROD};
 #define TION_LT_DUMP TION_LOGD
 
 void TionLtUartProtocol::read_uart_data(tion::TionUartReader *io) {
-  if (!this->reader) {
+  if (!this->reader_) {
     TION_LOGE(TAG, "Reader is not configured");
     return;
   }
@@ -257,7 +257,7 @@ TionLtUartProtocol::read_frame_result_t TionLtUartProtocol::read_frame_(tion::Ti
     frame.data.state.ma_auto = t_data.auto_sate;
     frame.data.state.comm_source = t_data.comm_source;
 
-    this->reader(*reinterpret_cast<const tion::tion_any_frame_t *>(&frame), sizeof(frame));
+    this->reader_(*reinterpret_cast<const tion::tion_any_frame_t *>(&frame), sizeof(frame));
   } else if (std::strncmp(str, ST_FIRM, sizeof(ST_FIRM) - 1) == 0) {
     str = str + sizeof(ST_FIRM) - 1;
     tion::tion_frame_t<tion::tion_dev_info_t> frame{
@@ -271,7 +271,7 @@ TionLtUartProtocol::read_frame_result_t TionLtUartProtocol::read_frame_(tion::Ti
         },
     };
     TION_LT_DUMP(TAG, "Got frm : %04X", frame.data.firmware_version);
-    this->reader(*reinterpret_cast<const tion::tion_any_frame_t *>(&frame), sizeof(frame));
+    this->reader_(*reinterpret_cast<const tion::tion_any_frame_t *>(&frame), sizeof(frame));
   } else if (std::strncmp(str, ST_MAC, sizeof(ST_MAC) - 1) == 0) {
     // just do nothings, we don't need MAC address now
   } else if (std::strncmp(str, ST_SW_MODE, sizeof(ST_SW_MODE) - 1) == 0) {
@@ -285,7 +285,7 @@ TionLtUartProtocol::read_frame_result_t TionLtUartProtocol::read_frame_(tion::Ti
 }
 
 bool TionLtUartProtocol::write_frame(uint16_t type, const void *data, size_t size) {
-  if (!this->writer) {
+  if (!this->writer_) {
     TION_LOGE(TAG, "Writer is not configured");
     return false;
   }
@@ -369,19 +369,19 @@ bool TionLtUartProtocol::write_frame(uint16_t type, const void *data, size_t siz
 
 bool TionLtUartProtocol::write_cmd_(const char *cmd) {
   TION_LT_TRACE(TAG, "TX: %s", cmd);
-  return this->writer(reinterpret_cast<const uint8_t *>(cmd), strlen(cmd));
+  return this->writer_(reinterpret_cast<const uint8_t *>(cmd), strlen(cmd));
 }
 
 bool TionLtUartProtocol::write_cmd_(const char *cmd, int8_t param) {
   const auto data = tion::str_sprintf(cmd, param);
   TION_LT_TRACE(TAG, "TX: %s", data.c_str());
-  return this->writer(reinterpret_cast<const uint8_t *>(data.c_str()), data.length());
+  return this->writer_(reinterpret_cast<const uint8_t *>(data.c_str()), data.length());
 }
 
 bool TionLtUartProtocol::write_cmd_(const char *cmd, uint32_t param) {
   const auto data = tion::str_sprintf(cmd, param);
   TION_LT_TRACE(TAG, "TX: %s", data.c_str());
-  return this->writer(reinterpret_cast<const uint8_t *>(data.c_str()), data.length());
+  return this->writer_(reinterpret_cast<const uint8_t *>(data.c_str()), data.length());
 }
 
 }  // namespace tion_lt
