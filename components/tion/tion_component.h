@@ -14,6 +14,7 @@
 #include "../tion-api/tion-api-4s.h"
 #include "../tion-api/tion-api-lt.h"
 #include "tion_vport.h"
+#include "tion_prefs.h"
 
 #define TION_C_LOG_(log, tag, fmt, ...) log(tag, "'%s' - " fmt, this->get_name().c_str(), ##__VA_ARGS__)
 #define TION_C_LOGV(tag, fmt, ...) TION_C_LOG_(ESP_LOGV, tag, fmt, ##__VA_ARGS__)
@@ -120,15 +121,7 @@ class TionApiComponent : public PollingComponent {
   }
 
 #ifdef USE_TION_RESTORE_STATE
-  void set_rtc_key(const char *key) {
-    if (key) {
-      this->rtc_key_ = fnv1_hash(key);
-      this->rtc_use_ = true;
-    } else {
-      this->rtc_key_ = 0;
-      this->rtc_use_ = false;
-    }
-  }
+  void set_rtc_key(const char *key) { this->rtc_hash_ = key ? fnv1_hash(key) : 0; }
 #endif
 
  protected:
@@ -141,11 +134,19 @@ class TionApiComponent : public PollingComponent {
   uint32_t batch_timeout_{};
 
 #ifdef USE_TION_RESTORE_STATE
-  // ключ и он же признак о необходимости загрузки
-  uint32_t rtc_key_{};
-  bool rtc_use_{};
-  ESPPreferenceObject rtc_obj_;
+  uint32_t rtc_hash_{};
+  TionPreferenceObject rtc_pref_;
+  TionApiBase::PresetData rtc_data_{
+      .target_temperature = -1,
+      .heater_state = -1,
+      .power_state = -1,
+      .fan_speed = -1,
+      .gate_position = TionGatePosition::UNKNOWN,
+      .auto_state = -1,
+  };
 #endif
+  bool load_state_();
+  void save_state_();
 
   CallbackManager<void(const TionState *)> state_callback_{};
 #ifdef TION_ENABLE_API_CONTROL_CALLBACK

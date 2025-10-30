@@ -70,30 +70,53 @@ void TionApiComponent::on_state_(const TionState &state, const uint32_t request_
   this->cancel_timeout(STATE_TIMEOUT);
   // notify state
   this->defer([this]() {
-#ifdef USE_TION_RESTORE_STATE
-    if (this->rtc_key_ != 0) {
-      this->rtc_obj_ = global_preferences->make_preference<TionApiBase::PresetData>(this->rtc_key_);
-      this->rtc_key_ = 0;  // сбрасываем ключ чтобы не пытаться восстановить данные повторно
-      TionApiBase::PresetData data;
-      if (this->rtc_obj_.load(&data)) {
-        dentra::tion::TionStateCall call(this->api());
-        data.to_call(&call);
-        call.perform();
-        return;
-      }
+    // загружаем запомненное состояние только после установки соединения
+    if (!this->load_state_()) {
+      this->state_callback_.call(&this->state());
+      this->save_state_();
     }
-
-    this->state_callback_.call(&this->state());
-
-    if (this->rtc_use_) {
-      TionApiBase::PresetData data;  // не инициализируем, все поля будут заполнены из from_state
-      data.from_state(this->state());
-      this->rtc_obj_.save(&data);
-    }
-#else
-    this->state_callback_.call(&this->state());
-#endif
   });
+}
+
+bool TionApiComponent::load_state_() {
+#ifdef USE_TION_RESTORE_STATE
+  if (this->rtc_hash_ != 0) {
+    this->rtc_pref_ = global_preferences->make_preference<TionApiBase::PresetData>(this->rtc_hash_, true);
+    this->rtc_hash_ = 0;  // сбрасываем ключ чтобы не пытаться восстановить данные повторно
+    if (this->rtc_pref_.load(&this->rtc_data_)) {
+      ESP_LOGI(TAG, "Restoring state");
+      dentra::tion::TionStateCall call(this->api());
+      this->rtc_data_.to_call(&call);
+      call.perform();
+      return true;
+    }
+  }
+#endif
+  return false;
+}
+
+void TionApiComponent::save_state_() {
+#ifdef USE_TION_RESTORE_STATE
+  if (!this->rtc_pref_.is_initialized()) {
+    return;
+  }
+  TionApiBase::PresetData data;  // не инициализируем, все поля будут заполнены из from_state
+  data.from_state(this->state());
+  // спец обработка для авто-режима
+  if (data.auto_state > 0) {
+    // не пишем во флеш при изменении скорости вентиляции
+    data.fan_speed = -1;
+    // так же при вкл/выкл
+    if (this->api()->get_auto_min_fan_speed() == 0) {
+      data.power_state = -1;
+    }
+  }
+  if (memcmp(&data, &this->rtc_data_, sizeof(data)) != 0) {
+    ESP_LOGD(TAG, "Saving state");
+    this->rtc_pref_.save(&data);
+    this->rtc_data_ = data;
+  }
+#endif
 }
 
 void TionApiComponent::state_check_schedule_() {
