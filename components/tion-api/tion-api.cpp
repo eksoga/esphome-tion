@@ -179,11 +179,15 @@ TionState TionApiBase::make_write_state_(TionStateCall *call) const {
     const auto auto_state = *call->get_auto_state();
     if (cs.auto_state != auto_state) {
       if (auto_state && !this->auto_is_valid()) {
-        TION_LOGW(TAG, "Auto is not configured properly.");
+        TION_LOGW(TAG, "Auto is not configured properly");
         ns.auto_state = false;
       } else {
         TION_LOGD(TAG, "New auto state %s -> %s", ONOFF(cs.auto_state), ONOFF(auto_state));
         ns.auto_state = auto_state;
+      }
+      if (ns.auto_state) {
+        // автоматический режим работает только с забором воздуха снаружи
+        call->set_gate_position(TionGatePosition::OUTDOOR);
       }
     }
   }
@@ -223,8 +227,9 @@ TionState TionApiBase::make_write_state_(TionStateCall *call) const {
       ns.power_state = power_state;
       // если ручное выключение, то выключаем авто-режим
       if (!call->get_auto_state().value_or(false) && !power_state) {
-        // TODO восстановить авто-режим при ручном включении
+        // TODO нужно ли восстановить авто-режим при ручном включении?
         ns.auto_state = false;
+        TION_LOGI(TAG, "Auto is turned off by manual power off");
       }
     }
   }
@@ -299,13 +304,20 @@ TionState TionApiBase::make_write_state_(TionStateCall *call) const {
         TION_LOGD(TAG, "New gate position %u -> %u", static_cast<uint8_t>(cs.gate_position),
                   static_cast<uint8_t>(gate_position));
         ns.gate_position = gate_position;
+
+        // если ручное переключение, то выключаем авто-режим
+        if (!call->get_auto_state().value_or(false) && gate_position != TionGatePosition::OUTDOOR) {
+          // TODO нужно ли восстановить авто-режим при ручном включении?
+          ns.auto_state = false;
+          TION_LOGI(TAG, "Auto is turned off by manual gate position change");
+        }
       }
     }
   }
 
   if (this->traits_.supports_manual_antifreeze) {
     if (ns.power_state && !ns.heater_state && ns.outdoor_temperature < 0) {
-      TION_LOGW(TAG, "Antifreeze protection has worked. Heater now enabled.");
+      TION_LOGW(TAG, "Antifreeze protection has worked, heater now enabled");
       ns.heater_state = true;
     }
   }
@@ -430,7 +442,7 @@ void TionApiBase::notify_state_(uint32_t request_id) {
   if (this->traits_.supports_manual_antifreeze) {
     const auto &cs = this->state_;
     if (cs.power_state && !cs.heater_state && cs.outdoor_temperature < 0) {
-      TION_LOGW(TAG, "Antifreeze protection has worked. Heater now enabled.");
+      TION_LOGW(TAG, "Antifreeze protection has worked, heater now enabled");
       if (call == nullptr) {
         call = new TionStateCall(this);
       }
@@ -479,7 +491,7 @@ void TionApiBase::enable_boost(bool state, TionStateCall *call) {
   }
 
   if (!this->state_.is_initialized()) {
-    TION_LOGW(TAG, "State was not initialized.");
+    TION_LOGW(TAG, "State was not initialized");
     return;
   }
 
@@ -500,7 +512,7 @@ void TionApiBase::enable_boost(uint16_t boost_time, TionStateCall *call) {
   }
 
   if (!this->state_.is_initialized()) {
-    TION_LOGW(TAG, "State was not initialized.");
+    TION_LOGW(TAG, "State was not initialized");
     return;
   }
 
