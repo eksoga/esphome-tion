@@ -67,9 +67,9 @@ packages:
       ## Please note that order of packages also is very important!
       {{ "" }}
       {%- for key, value in packages.items() %}
-      {%- for comment in value.comment.split("\n") %}
+        {%- for comment in value.comment.split("\n") %}
       ## {{ comment }}
-      {%- endfor %}
+        {%- endfor %}
       {{ "" if value.enabled else "# " }}- packages/{{ key }}.yaml
       {%- endfor %}
 {%- else %}
@@ -78,11 +78,11 @@ packages:
   {%- endfor %}
 {%- endif %}
 
-{%- if not is_prod and port == "ble" and packages["esp-idf/4.4.7"].enabled %}
+{#- {%- if not is_prod and port == "ble" and packages["esp-idf/4.4.7"].enabled %}
 external_components:
   - source: ../../esphome-2025.6-patched
     components: [ esp32_ble ]
-{%- endif %}
+{%- endif %} #}
 
 ## Uncomment to enable MQTT connection and remove api section.
 ## Do not forget to uncomment mqtt.yaml or if you plan to use SprutHub spruthub.yaml package above.
@@ -135,7 +135,8 @@ vport:
     ## Optional, Interval between sending heartbeat commands. Default: 5s.
     # heartbeat_interval: 5s
     {%- endif %}
-    {%- port == "ble" %}
+    {%- if port == "ble" %}
+    ## Optional, BLE connection waiting time. Default: 3s.
     connection_timeout: 5s
     {%- endif %}
 

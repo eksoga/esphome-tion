@@ -17,7 +17,7 @@ for br in "${types[@]}" ; do
     dfn=/tmp/$ofn
   fi
   ofn=$prj_path/$ofn
-  echo "Generating tion-$type config for $port connection..."
+  echo "Generating tion-$type config for $port connection to $dfn..."
   $prj_path/scripts/mk-config.py $j2_vars -D is_prod=true -D port=$port -D type=$type -D conn=api >$dfn
   if [ "$2" == "diff" ]; then
     diff $dfn $ofn
@@ -25,9 +25,11 @@ for br in "${types[@]}" ; do
   fi
   conns=(api mqtt)
   for conn in "${conns[@]}" ; do
+    dfn=tests/gen/tion-$br-$conn.yaml
+    echo "Generating test $dfn..."
     $prj_path/scripts/mk-config.py $j2_vars \
       -D port=$port -D type=$type -D conn=$conn -D project_source=../../components \
-      >tests/gen/tion-$br-$conn.yaml
+      >$dfn
   done
 done
 

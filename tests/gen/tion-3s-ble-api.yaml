@@ -30,7 +30,6 @@ packages:
   esp32_ble: !include ../../packages/esp32_ble.yaml
   tion/auto_co2: !include ../../packages/tion/auto_co2.yaml
   tion/auto_co2_config: !include ../../packages/tion/auto_co2_config.yaml
-  esp-idf/4.4.7: !include ../../packages/esp-idf/4.4.7.yaml
   tion/persistent: !include ../../packages/tion/persistent.yaml
   common/ble_connect: !include ../../packages/common/ble_connect.yaml
   # mqtt: !include ../../packages/mqtt.yaml
@@ -39,9 +38,6 @@ packages:
   # board/seeed_c6: !include ../../packages/board/seeed_c6.yaml
   # debug: !include ../../packages/debug.yaml
   tion/3s: !include ../../packages/tion/3s.yaml
-external_components:
-  - source: ../../esphome-2025.6-patched
-    components: [ esp32_ble ]
 
 ## Uncomment to enable MQTT connection and remove api section.
 ## Do not forget to uncomment mqtt.yaml or if you plan to use SprutHub spruthub.yaml package above.
@@ -84,6 +80,8 @@ vport:
     # command_interval: 100ms
     ## Optional, Command queue size. Default: 10.
     # command_queue_size: 16
+    ## Optional, BLE connection waiting time. Default: 3s.
+    connection_timeout: 5s
 
 ## Main climate component configuration.
 ## See detailed description and additional parameters at CONFIGURATION.md

@@ -66,9 +66,9 @@ tion/auto_co2_config:
   enabled: {{ not is_prod }}
 
 {%- if port == "ble" %}
-esp-idf/4.4.7:
+{# esp-idf/4.4.7:
   comment: If you have problems with BLE connection, try to use different ESP-IDF framework.
-  enabled: {{ not is_prod and type == "3s" }}
+  enabled: {{ not is_prod and type == "3s" }} #}
 tion/persistent:
   comment: Persistent connection runtime control switch.
   enabled: {{ not is_prod }}

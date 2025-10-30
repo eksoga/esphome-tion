@@ -55,8 +55,6 @@ packages:
       # - packages/tion/auto_co2.yaml
       ## Enable additional entities to auto_co2 configuration.
       # - packages/tion/auto_co2_config.yaml
-      ## If you have problems with BLE connection, try to use different ESP-IDF framework.
-      # - packages/esp-idf/4.4.7.yaml
       ## Persistent connection runtime control switch.
       # - packages/tion/persistent.yaml
       ## Additional connect switch useful for debugging.
@@ -115,6 +113,8 @@ vport:
     # command_interval: 100ms
     ## Optional, Command queue size. Default: 10.
     # command_queue_size: 16
+    ## Optional, BLE connection waiting time. Default: 3s.
+    connection_timeout: 5s
 
 ## Main climate component configuration.
 ## See detailed description and additional parameters at CONFIGURATION.md
