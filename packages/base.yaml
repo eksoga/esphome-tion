@@ -25,13 +25,7 @@ esphome:
   project:
     name: "dentra.$project_id-${tion_type}-${tion_conn}-${board_code}"
     version: "$project_version"
-  min_version: "2025.6.3"
-  # TODO remove after https://github.com/esphome/esphome/pull/8603 get released
-  platformio_options:
-    build_flags:
-      - -std=gnu++17
-    build_unflags:
-      - -std=gnu++11
+  min_version: "2025.10.3"
 
 preferences:
   flash_write_interval: 10min
