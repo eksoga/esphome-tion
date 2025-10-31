@@ -2,7 +2,6 @@
 
 #include <cinttypes>
 #include <functional>
-#include <etl/delegate.h>
 
 namespace dentra {
 namespace tion {
@@ -29,15 +28,14 @@ template<class frame_spec_t> class TionProtocol {
  public:
   using frame_spec_type = frame_spec_t;
 
-  using reader_type = etl::delegate<void(const frame_spec_t &data, size_t size)>;
-  reader_type reader_{};
-  void set_protocol_reader(reader_type &&reader) { this->reader = std::move(reader); }
+  using reader_type = std::function<void(const frame_spec_t &data, size_t size)>;
+  void set_protocol_reader(reader_type &&reader) { this->reader_ = std::move(reader); }
 
   using writer_type = std::function<bool(const uint8_t *data, size_t size)>;
   void set_protocol_writer(writer_type &&writer) { this->writer_ = std::move(writer); }
 
  protected:
-  // TODO move to protected
+  reader_type reader_{};
   writer_type writer_{};
 };
 

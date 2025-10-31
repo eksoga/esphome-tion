@@ -28,7 +28,7 @@ from esphome.cpp_generator import MockObjClass
 from .. import cgp, vport  # pylint: disable=relative-beyond-top-level
 
 CODEOWNERS = ["@dentra"]
-AUTO_LOAD = ["etl", "tion-api", "cgp"]
+AUTO_LOAD = ["tion-api", "cgp"]
 
 CONF_TION_ID = "tion_id"
 CONF_COMPONENT_CLASS = cgp.CONF_COMPONENT_CLASS

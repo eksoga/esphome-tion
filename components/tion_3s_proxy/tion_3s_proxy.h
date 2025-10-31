@@ -40,7 +40,7 @@ class Tion3sBleProxy : public Component, public tion::TionUartIO<Tion3sUartProto
  public:
   explicit Tion3sBleProxy(Tion3sApiProxy *api, uart::UARTComponent *uart)
       : tion::TionUartIO<Tion3sUartProtocolProxy>(uart), api_(api) {
-    this->set_on_frame(on_frame_type::create<Tion3sBleProxy, &Tion3sBleProxy::on_frame_>(*this));
+    this->set_on_frame([this](const frame_spec_type &frame, size_t size) { this->on_frame_(frame, size); });
     this->api_->set_ble(this);
   }
 

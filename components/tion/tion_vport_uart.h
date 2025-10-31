@@ -46,8 +46,8 @@ class TionVPortUARTComponent : public vport::VPortUARTComponent<io_t, typename i
  public:
   explicit TionVPortUARTComponent(io_t *io) : super_t(io) {
 #ifdef USE_TION_HALF_DUPLEX
-    using this_t = typename std::remove_pointer_t<decltype(this)>;
-    this->io_->set_on_frame(io_t::on_frame_type::template create<this_t, &this_t::on_frame_>(*this));
+    this->io_->set_on_frame(
+        [this](const typename io_t::frame_spec_type &frame, size_t size) { this->on_frame_(frame, size); });
 #endif
   }
 

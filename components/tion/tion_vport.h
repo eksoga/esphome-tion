@@ -26,7 +26,7 @@ template<class protocol_type> class TionIO {
     this->protocol_.write_frame(data.type, data.data, size - frame_spec_type::head_size());
   }
 
-  void set_on_frame(on_frame_type &&reader) { this->protocol_.reader_ = std::move(reader); }
+  void set_on_frame(on_frame_type &&reader) { this->protocol_.set_protocol_reader(std::move(reader)); }
 
  protected:
   protocol_type protocol_;

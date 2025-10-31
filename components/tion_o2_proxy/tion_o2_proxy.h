@@ -45,7 +45,8 @@ class TionO2Proxy : public Component {
  public:
   explicit TionO2Proxy(TionO2ApiProxy *rx, uart::UARTComponent *uart) : rx_(rx) {
     this->tx_ = new TionO2UartIO(uart);  // NOLINT cppcoreguidelines-owning-memory
-    this->tx_->set_on_frame(TionO2UartIO::on_frame_type::create<TionO2Proxy, &TionO2Proxy::on_frame_>(*this));
+    this->tx_->set_on_frame(
+        [this](const TionO2UartProtocolProxy::frame_spec_type &frame, size_t size) { this->on_frame_(frame, size); });
     this->rx_->set_parent(this);
   }
   virtual ~TionO2Proxy() { delete this->tx_; }
