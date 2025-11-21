@@ -44,7 +44,7 @@ template<class C> class TionSelect : public select::Select, public Component, pu
     }
     ESP_LOGD(TAG, "Available options are:");
     for (auto &&opt : options) {
-      ESP_LOGD(TAG, "  '%s'", opt.c_str());
+      ESP_LOGD(TAG, "  '%s'", opt);
     }
     this->parent_->add_on_state_callback([this](const TionState *state) {
       if (state) {
@@ -60,9 +60,11 @@ template<class C> class TionSelect : public select::Select, public Component, pu
   }
 
  protected:
-  void internal_publish_state_(const std::string &st) {
-    if (this->parent_->get_force_update() || !this->has_state() || st != this->state) {
-      this->publish_state(st);
+  void internal_publish_state_(const char *st) {
+    if (st) {
+      if (this->parent_->get_force_update() || !this->has_state() || std::strcmp(st, this->current_option()) != 0) {
+        this->publish_state(st);
+      }
     }
   }
   void control(const std::string &value) override {
@@ -72,9 +74,9 @@ template<class C> class TionSelect : public select::Select, public Component, pu
     }
     auto *call = this->parent_->make_call();
     if constexpr (PC::checker().has_api_state_set("")) {
-      C::set(this->parent_, call, value);
+      C::set(this->parent_, call, value.c_str());
     } else {
-      C::set(call, value, this->traits.get_options());
+      C::set(call, value.c_str(), this->traits.get_options());
     }
     call->perform();
   }

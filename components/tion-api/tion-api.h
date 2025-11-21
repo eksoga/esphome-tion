@@ -1,8 +1,6 @@
 #pragma once
 
 #include <cstddef>
-#include <map>
-#include <set>
 #include <vector>
 #include <type_traits>
 #include <functional>
@@ -309,12 +307,12 @@ class TionApiBase {
   void set_boost_heater_state(bool heater_state);
   void set_boost_target_temperature(int8_t target_temperature);
   // Вызывающая сторона ответственна за вызов perform.
-  void enable_preset(const std::string &preset, TionStateCall *call);
-  std::set<std::string> get_presets() const;
+  void enable_preset(const char *preset, TionStateCall *call);
+  std::vector<const char *> get_presets() const;
   bool has_presets() const { return !this->presets_.empty(); }
-  void add_preset(const std::string &name, const PresetData &data);
-  PresetData get_preset(const std::string &name) const;
-  const std::string &get_active_preset() const { return this->active_preset_; }
+  void add_preset(const char *name, const PresetData &data);
+  /// Всегда возвращает значение, при отсутствии активного пресета - константу PRESET_NONE
+  const char *get_active_preset_name() const { return this->active_preset_ ? this->active_preset_->name : PRESET_NONE; }
   /// Вызывающая сторона ответственна за вызов perform.
   /// @return true если были изменения и требуются выполнить perform
   bool auto_update(uint16_t current, TionStateCall *call);
@@ -342,8 +340,13 @@ class TionApiBase {
     uint32_t start_time;
   } boost_save_{};
 
-  std::map<std::string, PresetData> presets_;
-  std::string active_preset_{PRESET_NONE};
+  struct NamedPreset {
+    const char *name;
+    PresetData data;
+  };
+
+  std::vector<NamedPreset> presets_;
+  NamedPreset *active_preset_{};
 
   auto_co2::PIController auto_pi_;
   int16_t auto_setpoint_{};

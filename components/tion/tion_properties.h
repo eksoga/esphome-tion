@@ -515,34 +515,41 @@ struct AirIntake {
 };
 
 struct Presets {
-  static std::vector<std::string> get_options(TionApiComponent *c) {
+  static FixedVector<const char *> get_options(TionApiComponent *c) {
     if (c->api()->has_presets()) {
       const auto presets = c->api()->get_presets();
-      std::vector<std::string> result(presets.size());
+      FixedVector<const char *> result;
+      result.init(presets.size());
       std::copy(presets.begin(), presets.end(), result.begin());
       return result;
     }
     return {};
   };
-  static std::string get(TionApiComponent *c) { return c->api()->get_active_preset(); }
-  static void set(TionApiComponent *c, TionStateCall *call, const std::string &preset) {
+  static const char *get(TionApiComponent *c) { return c->api()->get_active_preset_name(); }
+  static void set(TionApiComponent *c, TionStateCall *call, const char *preset) {
     c->api()->enable_preset(preset, call);
   }
 };
 
 struct FanSpeed {
-  static std::vector<std::string> get_options(TionApiComponent *c) {
-    auto max_fan_speed = number::FanSpeed::get_max(c) + 1;  // plus zero speed
-    std::vector<std::string> result(max_fan_speed);
+  constexpr static const auto FAN_MODE_LABELS = {"0", "1", "2", "3", "4", "5", "6"};
+
+  static FixedVector<const char *> get_options(TionApiComponent *c) {
+    auto max_fan_speed = std::min(static_cast<uint8_t>(FAN_MODE_LABELS.size()),
+                                  static_cast<uint8_t>(number::FanSpeed::get_max(c) + 1u));  // plus zero speed
+    FixedVector<const char *> result;
+    result.init(max_fan_speed);
     for (uint8_t i = 0; i < max_fan_speed; i++) {
-      result[i] = get_(i);
+      result.push_back(get_(i));
     }
     return result;
   };
-  static std::string get_(uint8_t fan_speed) { return std::string(1, '0' + fan_speed); }
-  static std::string get(TionApiComponent *c) { return get_(number::FanSpeed::get(c->api()->get_state())); }
-  static void set(TionApiComponent *c, TionStateCall *call, const std::string &fan_mode) {
-    number::FanSpeed::set(c, call, *fan_mode.c_str() - '0');
+  static const char *get_(uint8_t fan_speed) { return *(FAN_MODE_LABELS.begin() + fan_speed); }
+  static const char *get(TionApiComponent *c) { return get_(number::FanSpeed::get(c->api()->get_state())); }
+  static void set(TionApiComponent *c, TionStateCall *call, const char *fan_mode) {
+    if (fan_mode) {
+      number::FanSpeed::set(c, call, *fan_mode - '0');
+    }
   }
 };
 

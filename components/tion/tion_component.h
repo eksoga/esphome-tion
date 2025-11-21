@@ -1,7 +1,6 @@
 #pragma once
 
 #include <functional>
-#include <map>
 
 #include "esphome/core/defines.h"
 #include "esphome/core/log.h"
@@ -87,9 +86,7 @@ class TionApiComponent : public PollingComponent {
   void set_batch_timeout(uint32_t batch_timeout) { this->batch_timeout_ = batch_timeout; };
   void set_force_update(bool force_update) { this->force_update_ = force_update; };
   bool get_force_update() const { return this->force_update_; }
-  void add_preset(const std::string &name, const TionApiBase::PresetData &preset) {
-    this->api_->add_preset(name, preset);
-  }
+  void add_preset(const char *name, const TionApiBase::PresetData &preset) { this->api_->add_preset(name, preset); }
 
   TionStateCall *make_call();
 

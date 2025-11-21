@@ -433,9 +433,9 @@ void TionApiBase::notify_state_(uint32_t request_id) {
     }
   }
 
-  if (this->active_preset_ != PRESET_NONE) {
-    if (this->presets_[this->active_preset_].is_modified(this->state_)) {
-      this->active_preset_ = PRESET_NONE;
+  if (this->active_preset_ != nullptr) {
+    if (this->active_preset_->data.is_modified(this->state_)) {
+      this->active_preset_ = nullptr;
     }
   }
 
@@ -653,53 +653,48 @@ void TionApiBase::boost_cancel_(TionStateCall *call) {
   this->boost_save_.to_call(call);
 }
 
-void TionApiBase::enable_preset(const std::string &preset, TionStateCall *call) {
-  TION_LOGD(TAG, "Activate preset '%s'", preset.c_str());
-  if (preset.empty() || strcasecmp(preset.c_str(), PRESET_NONE) == 0) {
-    this->active_preset_ = preset;
+void TionApiBase::enable_preset(const char *preset, TionStateCall *call) {
+  TION_LOGD(TAG, "Activate preset '%s'", preset);
+  if (preset == nullptr || *preset == 0 || strcasecmp(preset, PRESET_NONE) == 0) {
+    this->active_preset_ = nullptr;
     return;
   }
-  const auto &it = this->presets_.find(preset);
-  if (it == this->presets_.end()) {
-    TION_LOGD(TAG, "Preset '%s' not found", preset.c_str());
-    return;
+
+  for (auto &&it : this->presets_) {
+    if (strcasecmp(preset, it.name) == 0) {
+      this->active_preset_ = &it;
+      this->active_preset_->data.to_call(call);
+      return;
+    }
   }
-  this->active_preset_ = preset;
-  it->second.to_call(call);
+
+  TION_LOGD(TAG, "Preset '%s' not found", preset);
 }
 
-std::set<std::string> TionApiBase::get_presets() const {
-  std::set<std::string> presets;
-  presets.emplace(PRESET_NONE);
+std::vector<const char *> TionApiBase::get_presets() const {
+  std::vector<const char *> presets;
+  presets.push_back(PRESET_NONE);
   for (auto &&preset : this->presets_) {
-    presets.emplace(preset.first);
+    presets.push_back(preset.name);
   }
   return presets;
 };
 
-TionApiBase::PresetData TionApiBase::get_preset(const std::string &name) const {
-  const auto &it = this->presets_.find(name);
-  if (it != this->presets_.end()) {
-    return it->second;
-  }
-  return {};
-}
-
-void TionApiBase::add_preset(const std::string &name, const PresetData &data) {
-  if (name.empty()) {
+void TionApiBase::add_preset(const char *name, const PresetData &data) {
+  if (name == nullptr || *name == 0) {
     TION_LOGW(TAG, "Empty preset name");
     return;
   }
-  if (strcasecmp(name.c_str(), PRESET_NONE) == 0) {
+  if (strcasecmp(name, PRESET_NONE) == 0) {
     TION_LOGW(TAG, "Skip reserved preset 'none'");
     return;
   }
-  if (!data.is_valid(name.c_str(), this->traits_)) {
+  if (!data.is_valid(name, this->traits_)) {
     return;
   }
-  TION_LOGD(TAG, "Setup preset '%s': power=%d, heat=%d, fan=%u, temp=%d, gate=%u", name.c_str(), data.power_state,
+  TION_LOGD(TAG, "Setup preset '%s': power=%d, heat=%d, fan=%u, temp=%d, gate=%u", name, data.power_state,
             data.heater_state, data.fan_speed, data.target_temperature, static_cast<uint8_t>(data.gate_position));
-  this->presets_.insert_or_assign(name, data);
+  this->presets_.push_back({.name = name, .data = data});
 }
 
 void TionApiBase::set_auto_pi_data(float kp, float ti, int db) {
