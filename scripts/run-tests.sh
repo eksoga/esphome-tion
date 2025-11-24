@@ -9,7 +9,7 @@ conns=(api mqtt)
 test_dir=$prj_path/tests/gen
 conf_dir=$prj_path/configs
 
-ESPHOME_DATA_DIR=$prj_path/.build.nosync/esphome-tests
+ESPHOME_DATA_DIR=$(realpath $prj_path/.nosync/esphome-tests)
 
 for type in "${types[@]}"; do
   for port in "${ports[@]}"; do

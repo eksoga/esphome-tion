@@ -6,7 +6,7 @@ secrets.yaml
 /.esphome
 /.platformio
 /.venv
-/.build
+/.nosync
 /.clang_complete
 /.gcc-flags.json
 /.temp-clang-tidy.cpp
@@ -45,5 +45,7 @@ secrets.yaml
 /components/_*
 /components/http_request
 /components/mqtt
+/components/etl
+/components/json
 
 /fw

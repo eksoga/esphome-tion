@@ -62,7 +62,8 @@ template<class C> class TionSelect : public select::Select, public Component, pu
  protected:
   void internal_publish_state_(const char *st) {
     if (st) {
-      if (this->parent_->get_force_update() || !this->has_state() || std::strcmp(st, this->current_option()) != 0) {
+      if (this->parent_->get_force_update() || !this->has_state() || this->current_option() == nullptr ||
+          std::strcmp(st, this->current_option()) != 0) {
         this->publish_state(st);
       }
     }
@@ -74,9 +75,9 @@ template<class C> class TionSelect : public select::Select, public Component, pu
     }
     auto *call = this->parent_->make_call();
     if constexpr (PC::checker().has_api_state_set("")) {
-      C::set(this->parent_, call, value.c_str());
+      C::set(this->parent_, call, value);
     } else {
-      C::set(call, value.c_str(), this->traits.get_options());
+      C::set(call, value, this->traits.get_options());
     }
     call->perform();
   }

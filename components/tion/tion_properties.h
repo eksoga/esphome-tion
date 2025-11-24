@@ -214,7 +214,7 @@ struct Error {
 };
 
 struct Boost {
-  static bool get(const TionState &state) { return state.boost_time_left > 0; }
+  static bool get(TionApiComponent *c) { return c->api()->is_boost_running(); }
 };
 
 struct State {
@@ -264,7 +264,7 @@ struct Boost : public binary_sensor::Boost {
 namespace sensor {
 struct FanSpeed {
   static const char *get_icon(TionApiComponent *c) {
-    if (c->state().is_boost_running()) {
+    if (c->api()->is_boost_running()) {
       return "mdi:fan-clock";
     }
     if (c->state().auto_state) {
@@ -375,7 +375,7 @@ struct PcbPwrTemperature {
 };
 
 struct BoostTimeLeft {
-  static float get(const TionState &state) { return state.boost_time_left > 0 ? state.boost_time_left : 0; }
+  static float get(TionApiComponent *c) { return c->api()->get_boost_time_left(); }
 };
 
 struct FanPower {
@@ -448,7 +448,7 @@ struct TargetTemperature : public sensor::TargetTemperature {
 };
 
 struct BoostTime {
-  static uint8_t get(TionApiComponent *c) { return c->traits().boost.time / 60; }
+  static uint8_t get(TionApiComponent *c) { return c->api()->get_boost_time() / 60; }
   static void set(TionApiComponent *c, uint8_t state) { c->api()->set_boost_time(state * 60); }
 
   static constexpr uint8_t get_min(TionApiComponent *c) { return 1; }
@@ -488,7 +488,7 @@ struct HardwareVersion {
 namespace select {
 
 struct AirIntake {
-  static std::vector<std::string> get_options(TionApiComponent *c) {
+  static FixedVector<const char *> get_options(TionApiComponent *c) {
     if (c->traits().supports_gate_position_change_mixed) {
       return {"outdoor", "indoor", "mixed"};
     }
@@ -497,14 +497,14 @@ struct AirIntake {
     }
     return {};
   };
-  static std::string get(const TionState &state, const std::vector<std::string> &options) {
+  static const char *get(const TionState &state, const FixedVector<const char *> &options) {
     const auto value = static_cast<uint8_t>(state.gate_position);
     if (value < options.size()) {
       return options[value];
     }
     return {};
   }
-  static void set(TionStateCall *call, const std::string &state, const std::vector<std::string> &options) {
+  static void set(TionStateCall *call, const std::string &state, const FixedVector<const char *> &options) {
     for (size_t i = 0; i < options.size(); i++) {
       if (options[i] == state) {
         call->set_gate_position(static_cast<TionGatePosition>(i));
@@ -526,8 +526,8 @@ struct Presets {
     return {};
   };
   static const char *get(TionApiComponent *c) { return c->api()->get_active_preset_name(); }
-  static void set(TionApiComponent *c, TionStateCall *call, const char *preset) {
-    c->api()->enable_preset(preset, call);
+  static void set(TionApiComponent *c, TionStateCall *call, const std::string &preset) {
+    c->api()->enable_preset(preset.c_str(), call);
   }
 };
 
@@ -546,9 +546,9 @@ struct FanSpeed {
   };
   static const char *get_(uint8_t fan_speed) { return *(FAN_MODE_LABELS.begin() + fan_speed); }
   static const char *get(TionApiComponent *c) { return get_(number::FanSpeed::get(c->api()->get_state())); }
-  static void set(TionApiComponent *c, TionStateCall *call, const char *fan_mode) {
-    if (fan_mode) {
-      number::FanSpeed::set(c, call, *fan_mode - '0');
+  static void set(TionApiComponent *c, TionStateCall *call, const std::string &fan_mode) {
+    if (!fan_mode.empty()) {
+      number::FanSpeed::set(c, call, *fan_mode.c_str() - '0');
     }
   }
 };

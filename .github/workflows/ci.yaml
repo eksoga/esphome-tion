@@ -25,7 +25,7 @@ env:
   FORCE_COLOR: 1
   ESPHOME_VERSION: "2025.11.0"
   PYTHON_VERSION: "3.12"
-  ESPHOME_DATA_DIR: ".esphome"
+  # ESPHOME_DATA_DIR: ".esphome" # fails with 'not a git repository' if set
   TESTS_DIR: "tests/gen"
   BUILD_DIR: "configs"
 
