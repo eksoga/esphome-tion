@@ -260,7 +260,7 @@ bool TionClimate::set_fan_speed_(const TionState &state) {
     return false;
   }
 
-  if (this->has_custom_fan_mode() && fan_mode_to_speed(this->get_custom_fan_mode()) != state.fan_speed &&
+  if ((!this->has_custom_fan_mode() || fan_mode_to_speed(this->get_custom_fan_mode()) != state.fan_speed) &&
       state.fan_speed <= FAN_MODE_LABELS.size()) {
     return this->set_custom_fan_mode_(speed_to_fan_mode(state.fan_speed));
   }
