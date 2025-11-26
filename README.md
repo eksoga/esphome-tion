@@ -2,7 +2,7 @@
 [version]: https://github.com/dentra/esphome-tion/releases/
 [license-shield]: https://img.shields.io/static/v1?label=Лицензия&message=MIT&color=orange&logo=license
 [license]: https://opensource.org/licenses/MIT
-[esphome-release-shield]: https://img.shields.io/static/v1?label=ESPHome&message=2025.10.3&color=green&logo=esphome
+[esphome-release-shield]: https://img.shields.io/static/v1?label=ESPHome&message=2025.11.0&color=green&logo=esphome
 [esphome-release]: https://github.com/esphome/esphome/releases/
 [open-in-vscode-shield]: https://img.shields.io/static/v1?label=+&message=Открыть+в+VSCode&color=blue&logo=visualstudiocode
 [open-in-vscode]: https://open.vscode.dev/dentra/esphome-tion
@@ -182,9 +182,9 @@ UART подключение различно для разных моделей 
 
 | #   | Разъем Tion | Цвет провода от готового разъема с AliExpress | Подключение к ESP32 |
 | --- | ----------- | --------------------------------------------- | ------------------- |
-| 1   | GND         | ⚫️ черный                                     | GND                 |
+| 1   | GND         | ⚫️ черный                                    | GND                 |
 | 2   | RX          | 🔴 красный                                    | TX                  |
-| 3   | TX          | ⚪️ белый                                      | RX                  |
+| 3   | TX          | ⚪️ белый                                     | RX                  |
 | 4   | 3V3         | 🟡 желтый                                     | 3V3                 |
 
 **Важные нюансы:**
