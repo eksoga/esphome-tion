@@ -204,8 +204,8 @@ void Tion4sRC::on_frame(uint16_t type, const uint8_t *data, size_t size) {
           .request_id = request_id,
           .data =
               {
-                  .is_active = this->api_->get_state().boost_time_left > 0,
-                  .turbo_time = this->api_->get_state().boost_time_left,
+                  .is_active = this->api_->is_boost_running(),
+                  .turbo_time = this->api_->get_boost_time_left(),
                   .err_code = 0,
               },
       };

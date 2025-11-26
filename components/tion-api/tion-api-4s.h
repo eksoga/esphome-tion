@@ -80,6 +80,8 @@ class Tion4sApi : public tion::TionApiBase, public tion::TionApiWriter {
   }
   void reset_filter() override { this->reset_filter(this->state_, ++this->request_id_); }
 
+  uint16_t get_boost_time_left() const override;
+
  protected:
   on_turbo_type on_turbo_{};
 #ifdef TION_ENABLE_SCHEDULER
@@ -87,8 +89,9 @@ class Tion4sApi : public tion::TionApiBase, public tion::TionApiWriter {
   on_timer_type on_timer_{};
   on_timers_state_type on_timers_state_{};
 #endif
+  uint16_t native_boost_time_left_{};
 
-  void boost_enable_native_(bool state) override;
+  void enable_boost(uint16_t boost_time, tion::TionStateCall *call) override;
 
   bool request_turbo_() const;
   bool request_dev_info_() const;

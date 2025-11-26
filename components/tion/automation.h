@@ -131,7 +131,7 @@ template<typename... Ts> class BoostToggleAction : public Action<Ts...> {
  public:
   explicit BoostToggleAction(TionApiComponent *tion) : tion_(tion) {}
 
-  void play(Ts... x) override { this->tion_->boost_enable(!this->tion_->state().is_boost_running()); }
+  void play(Ts... x) override { this->tion_->boost_enable(!this->tion_->api()->is_boost_running()); }
 
  protected:
   TionApiComponent *tion_;
@@ -160,7 +160,7 @@ template<typename... Ts> class BoostTurnOffAction : public Action<Ts...> {
 template<typename... Ts> class BoostCondition : public Condition<Ts...> {
  public:
   BoostCondition(TionApiComponent *tion, bool state) : tion_(tion), state_(state) {}
-  bool check(Ts... x) override { return this->tion_->state().is_boost_running() == this->state_; }
+  bool check(Ts... x) override { return this->tion_->api()->is_boost_running() == this->state_; }
 
  protected:
   TionApiComponent *tion_;

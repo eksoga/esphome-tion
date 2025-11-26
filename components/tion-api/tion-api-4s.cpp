@@ -463,16 +463,23 @@ void Tion4sApi::dump_state_(const tion4s_state_t &state) const {
 }
 
 void Tion4sApi::update_turbo_(const tion4s_turbo_t &turbo) {
-  this->state_.boost_time_left = turbo.is_active ? turbo.turbo_time : 0;
+  this->native_boost_time_left_ = turbo.is_active ? turbo.turbo_time : 0;
 }
 
-void Tion4sApi::boost_enable_native_(bool state) {
-  if (!this->traits_.supports_boost) {
-    TION_LOGW(TAG, "Native boost is unsupported");
-    return;
+void Tion4sApi::enable_boost(uint16_t boost_time, tion::TionStateCall *call) {
+  if (this->traits_.supports_boost) {
+    TION_LOGD(TAG, "Enable native boost: %s", ONOFF(boost_time > 0));
+    this->set_turbo(boost_time, ++this->request_id_);
+  } else {
+    tion::TionApiBase::enable_boost(boost_time, call);
   }
-  TION_LOGD(TAG, "Enable native boost: %s", ONOFF(state));
-  this->set_turbo(this->traits_.boost.time, ++this->request_id_);
+}
+
+uint16_t Tion4sApi::get_boost_time_left() const {
+  if (this->traits_.supports_boost) {
+    return this->native_boost_time_left_;
+  }
+  return tion::TionApiBase::get_boost_time_left();
 }
 
 }  // namespace tion_4s

@@ -39,6 +39,7 @@ CONF_GATE_POSITION = "gate_position"
 CONF_AUTO = "auto"
 CONF_BUTTON_PRESETS = "button_presets"
 CONF_ENABLE_KIV = "enable_kiv"
+CONF_WORK_TIME = "work_time"
 
 CONF_STATE_TIMEOUT = "state_timeout"
 CONF_STATE_WARNOUT = "state_warnout"
@@ -89,9 +90,19 @@ PRESET_SCHEMA = cv.Schema(
             cv.none, cv.int_range(min=0, max=30)
         ),
         cv.Optional(CONF_GATE_POSITION, default="none"): cv.Any(
-            cv.none, cv.one_of(*PRESET_GATE_POSITIONS, lower=True)
+            cv.none, cv.enum(PRESET_GATE_POSITIONS, lower=True)
         ),
         cv.Optional(CONF_AUTO, default="none"): cv.Any(cv.none, cv.boolean),
+        cv.Optional(CONF_WORK_TIME, default="none"): cv.Any(
+            cv.All(
+                cv.positive_time_period_seconds,
+                cv.Range(
+                    min=cv.TimePeriod(minutes=1),
+                    max=cv.TimePeriod(minutes=60),
+                ),
+            ),
+            cv.none,
+        ),
     }
 )
 
@@ -224,6 +235,7 @@ def _setup_tion_api_presets(config: dict, var: cg.MockObj):
             ("fan_speed", CONF_FAN_SPEED),
             ("gate_position", CONF_GATE_POSITION),
             ("auto_state", CONF_AUTO),
+            ("work_time", CONF_WORK_TIME),
         ]
         for arg in args:
             if preset[arg[1]] is not None:
@@ -236,13 +248,11 @@ def _setup_tion_api_presets(config: dict, var: cg.MockObj):
 
         def preset_arg(nm: str):
             if preset[nm] is not None:
-                return (
-                    PRESET_GATE_POSITIONS[preset[nm]]
-                    if nm == CONF_GATE_POSITION
-                    else preset[nm]
-                )
+                return preset[nm]
             if nm == CONF_GATE_POSITION:
                 return TionGatePosition.UNKNOWN
+            if nm == CONF_WORK_TIME:
+                return 0
             return -1
 
         struct_args = [(arg[0], preset_arg(arg[1])) for arg in args]
@@ -304,7 +314,7 @@ async def to_code(config: dict):
             await _setup_auto(conf[CONF_AUTO], var)
         if conf[CONF_RESTORE_STATE]:
             cg.add_define("USE_TION_RESTORE_STATE")
-            cg.add(var.set_rtc_key(f"{conf[CONF_ID].id}"))
+            cg.add(var.set_rtc_key(f"{conf[CONF_ID].id}-v2"))
         if CONF_ENABLE_KIV:
             cg.add_build_flag("-DTION_ENABLE_KIV")
 

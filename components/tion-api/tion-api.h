@@ -42,18 +42,6 @@ struct TionTraits {
   using ErrorsReportPtr = std::add_pointer_t<void(uint32_t errors)>;
   ErrorsReportPtr errors_report{};
 
-  struct {
-    // Время работы режима "Турбо" в секундах.
-    uint16_t time;
-    // <0 - текущий режим работы, =0 - обогрев выключен, >0 - обогрев включен.
-    int8_t heater_state;
-    // <0 - используем текущую целевую температуру.
-    int8_t target_temperature;
-    bool has_heater_state() const { return this->heater_state >= 0; }
-    bool has_target_temperature() const { return this->target_temperature >= 0; }
-    bool get_heater_state() const { return this->heater_state > 0; }
-  } boost;
-
   // Максимальная скорость вентиляции.
   uint8_t max_fan_speed;
   // Минимальная целевая температура.
@@ -164,8 +152,6 @@ class TionState {
   // 3s: EC05 - ошибка заслонки
   uint32_t errors;
 
-  bool is_boost_running() const { return this->boost_time_left > 0; }
-
   // Состояние заслонки, открыта или закрыта.
   bool is_gate_open() const { return this->gate_position == TionGatePosition::OPENED; }
   // Реальная текущая скорость вентилятора 0 до максимум, 0 при выключенном питании.
@@ -245,7 +231,7 @@ class TionApiBase {
  public:
   TionApiBase();
 
-  constexpr static const char *PRESET_NONE = "none";
+  constexpr static const char *PRESET_NONE = "None";
 
   struct PresetData {
     // <0 - без изменений
@@ -260,6 +246,8 @@ class TionApiBase {
     TionGatePosition gate_position;
     // <0 - без изменений, =0 - выкл, >0 - вкл
     int8_t auto_state;
+    // время работы пресета, 0 - постоянно
+    uint16_t work_time;
 
     void to_call(TionStateCall *call) const;
     void from_state(const TionState &state);
@@ -273,6 +261,7 @@ class TionApiBase {
     bool has_fan_speed() const { return this->fan_speed >= 0; }
     bool has_gate_position() const { return this->gate_position != TionGatePosition::UNKNOWN; }
     bool has_auto_state() const { return this->auto_state >= 0; }
+    bool has_timer() const { return this->work_time > 0; }
 
     // проверка относительно состояния
     bool is_modified(const TionState &st) const;
@@ -302,10 +291,14 @@ class TionApiBase {
 
   // Вызывающая сторона ответственна за вызов perform..
   void enable_boost(bool state, TionStateCall *call);
-  void enable_boost(uint16_t boost_time, TionStateCall *call);
+  virtual void enable_boost(uint16_t boost_time, TionStateCall *call);
   void set_boost_time(uint16_t boost_time);
+  uint16_t get_boost_time() const { return this->boost_preset_().data.work_time; }
   void set_boost_heater_state(bool heater_state);
   void set_boost_target_temperature(int8_t target_temperature);
+  bool is_boost_running() const { return this->boost_save_.start_time != 0; }
+  virtual uint16_t get_boost_time_left() const;
+
   // Вызывающая сторона ответственна за вызов perform.
   void enable_preset(const char *preset, TionStateCall *call);
   std::vector<const char *> get_presets() const;
@@ -313,6 +306,7 @@ class TionApiBase {
   void add_preset(const char *name, const PresetData &data);
   /// Всегда возвращает значение, при отсутствии активного пресета - константу PRESET_NONE
   const char *get_active_preset_name() const { return this->active_preset_ ? this->active_preset_->name : PRESET_NONE; }
+
   /// Вызывающая сторона ответственна за вызов perform.
   /// @return true если были изменения и требуются выполнить perform
   bool auto_update(uint16_t current, TionStateCall *call);
@@ -343,10 +337,11 @@ class TionApiBase {
   struct NamedPreset {
     const char *name;
     PresetData data;
+    bool has_timer() const { return data.has_timer(); }
   };
 
   std::vector<NamedPreset> presets_;
-  NamedPreset *active_preset_{};
+  NamedPreset *active_preset_{}, *activate_preset_{};
 
   auto_co2::PIController auto_pi_;
   int16_t auto_setpoint_{};
@@ -361,13 +356,16 @@ class TionApiBase {
 #endif
 
   void notify_state_(uint32_t request_id);
-  virtual void boost_enable_native_(bool state) {}
+
   void boost_enable_(uint16_t boost_time, TionStateCall *call);
   void boost_cancel_(TionStateCall *call);
   void boost_save_state_();
-  bool boost_is_running_() const { return this->state_.is_boost_running(); }
+
   void auto_update_fan_speed_();
   uint8_t auto_pi_update_(uint16_t current);
+
+  NamedPreset &boost_preset_() { return this->presets_[0]; }
+  const NamedPreset &boost_preset_() const { return this->presets_[0]; }
 };
 
 }  // namespace tion
