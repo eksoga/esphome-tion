@@ -127,8 +127,12 @@ static const char *const CMD_GET_PID = "get_pid\r\n";
 
 static const uint8_t PROD[] = {0, TION_LT_AUTO_PROD};
 
-#define TION_LT_TRACE TION_LOGD
-#define TION_LT_DUMP TION_LOGD
+#ifndef TION_LT_TRACE
+#define TION_LT_TRACE TION_LOGV
+#endif
+#ifndef TION_LT_DUMP
+#define TION_LT_DUMP TION_LOGV
+#endif
 
 void TionLtUartProtocol::read_uart_data(tion::TionUartReader *io) {
   if (!this->reader_) {
