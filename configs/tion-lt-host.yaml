@@ -1,0 +1,55 @@
+# DO NOT USE THIS CONFIGURATION! THIS IS ONLY FOR DEVELOPMENT PURPOSE!
+substitutions:
+  node_name: tion-lt-host-debug
+  project_branch: next
+  project_source: ../components
+  # project_source_refresh: 0s
+  time_platform: sntp
+
+host:
+
+packages:
+  tion: !include tion-lt-uart.yaml
+
+esphome:
+  platformio_options:
+    build_flags:
+      - -g3
+      - -O0
+
+api:
+
+wifi: !remove
+captive_portal: !remove
+ota: !remove
+esp32: !remove
+
+logger:
+  hardware_uart: !remove
+  baud_rate: 115200
+
+uart:
+  - id: !remove tion_uart
+
+vport:
+  - id: !remove tion_uart_vport
+  - id: tion_uart_vport
+    platform: tion_debug
+
+tion:
+  force_update: true
+  presets:
+    Boost:
+      work_time: 1min
+    Скорость 3:
+      fan_speed: 3
+
+sensor:
+  - id: !remove tion_wifi_signal
+  - platform: tion
+    type: fan_speed
+    name: Fan Speed
+
+fan:
+  - platform: tion
+    name: Fan
