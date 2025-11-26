@@ -83,10 +83,11 @@ bool TionApiComponent::load_state_() {
   if (this->rtc_hash_ != 0) {
     this->rtc_pref_ = global_preferences->make_preference<TionApiBase::PresetData>(this->rtc_hash_, true);
     this->rtc_hash_ = 0;  // сбрасываем ключ чтобы не пытаться восстановить данные повторно
-    if (this->rtc_pref_.load(&this->rtc_data_)) {
+    TionApiBase::PresetData rtc_data{};
+    if (this->rtc_pref_.load(&rtc_data)) {
       ESP_LOGI(TAG, "Restoring state");
       dentra::tion::TionStateCall call(this->api());
-      this->rtc_data_.to_call(&call);
+      rtc_data.to_call(&call);
       call.perform();
       return true;
     }
@@ -100,6 +101,9 @@ void TionApiComponent::save_state_() {
   if (!this->rtc_pref_.is_initialized()) {
     return;
   }
+  if (this->api()->is_boost_running()) {
+    return;
+  }
   TionApiBase::PresetData data;  // не инициализируем, все поля будут заполнены из from_state
   data.from_state(this->state());
   // спец обработка для авто-режима
@@ -111,10 +115,10 @@ void TionApiComponent::save_state_() {
       data.power_state = -1;
     }
   }
-  if (memcmp(&data, &this->rtc_data_, sizeof(data)) != 0) {
+  TionApiBase::PresetData rtc_data;  // не инициализируем, все поля будут заполнены из load
+  if (!this->rtc_pref_.load(&rtc_data) || memcmp(&data, &rtc_data, sizeof(data)) != 0) {
     ESP_LOGD(TAG, "Saving state");
     this->rtc_pref_.save(&data);
-    this->rtc_data_ = data;
   }
 #endif
 }

@@ -134,14 +134,6 @@ class TionApiComponent : public PollingComponent {
 #ifdef USE_TION_RESTORE_STATE
   uint32_t rtc_hash_{};
   TionPreferenceObject rtc_pref_;
-  TionApiBase::PresetData rtc_data_{
-      .target_temperature = -1,
-      .heater_state = -1,
-      .power_state = -1,
-      .fan_speed = -1,
-      .gate_position = TionGatePosition::UNKNOWN,
-      .auto_state = -1,
-  };
 #endif
   bool load_state_();
   void save_state_();
