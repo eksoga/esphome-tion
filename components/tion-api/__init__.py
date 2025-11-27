@@ -30,10 +30,10 @@ def FILTER_SOURCE_FILES() -> list[str]:
     for port in included_ports:
         excluded_ports.remove(port)
 
-    _LOGGER.info("included types: %s", included_types)
-    _LOGGER.info("excluded types: %s", excluded_types)
-    _LOGGER.info("included ports: %s", included_ports)
-    _LOGGER.info("excluded ports: %s", excluded_ports)
+    _LOGGER.debug("included types: %s", included_types)
+    _LOGGER.debug("excluded types: %s", excluded_types)
+    _LOGGER.debug("included ports: %s", included_ports)
+    _LOGGER.debug("excluded ports: %s", excluded_ports)
 
     for entry in Path(__file__).parent.iterdir():
         for typ in excluded_types:
@@ -70,5 +70,5 @@ def FILTER_SOURCE_FILES() -> list[str]:
         files_to_filter.append("pi_controller.cpp")
         files_to_filter.append("pi_controller.h")
 
-    _LOGGER.info("filtered files: %s", set(files_to_filter))
+    _LOGGER.debug("filtered files: %s", set(files_to_filter))
     return set(files_to_filter)
