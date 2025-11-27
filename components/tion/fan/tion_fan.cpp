@@ -66,7 +66,7 @@ void TionFan::on_state_(const TionState &state) {
   }
 
   if (this->parent_->api()->has_presets()) {
-    has_changes = this->set_preset_mode_(this->parent_->api()->get_active_preset_name());
+    has_changes |= this->set_preset_mode_(this->parent_->api()->get_active_preset_name());
   }
 
   if (this->parent_->get_force_update() || has_changes) {

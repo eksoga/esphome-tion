@@ -37,7 +37,7 @@ vport:
     platform: tion_debug
 
 tion:
-  force_update: true
+  force_update: false
   presets:
     Boost:
       work_time: 1min

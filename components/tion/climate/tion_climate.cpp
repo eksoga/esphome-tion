@@ -223,9 +223,9 @@ void TionClimate::on_state_(const TionState &state) {
   if (this->parent_->api()->has_presets()) {
     const auto active_preset = this->parent_->api()->get_active_preset_name();
     if (const auto climate_preset = std_preset_find(active_preset); !std_preset_is_invalid(climate_preset)) {
-      has_changes = this->set_preset_(climate_preset);
+      has_changes |= this->set_preset_(climate_preset);
     } else if (!this->has_custom_preset() || strcasecmp(this->get_custom_preset(), active_preset) != 0) {
-      has_changes = this->set_custom_preset_(active_preset);
+      has_changes |= this->set_custom_preset_(active_preset);
     }
   }
 

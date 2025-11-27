@@ -302,7 +302,7 @@ class TionApiBase {
   // Вызывающая сторона ответственна за вызов perform.
   void enable_preset(const char *preset, TionStateCall *call);
   std::vector<const char *> get_presets() const;
-  bool has_presets() const { return !this->presets_.empty(); }
+  bool has_presets() const { return this->presets_.size() > 1; }
   void add_preset(const char *name, const PresetData &data);
   /// Всегда возвращает значение, при отсутствии активного пресета - константу PRESET_NONE
   const char *get_active_preset_name() const { return this->active_preset_ ? this->active_preset_->name : PRESET_NONE; }
