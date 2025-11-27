@@ -86,7 +86,9 @@ namespace tion {
 
 using namespace tion_3s;
 
+#ifdef TION_ENABLE_PI_CONTROLLER
 static const uint8_t PROD[] = {0, TION_3S_AUTO_PROD};
+#endif
 
 struct Tion3sTimersResponse {
   struct {
@@ -245,7 +247,9 @@ Tion3sApi::Tion3sApi() {
   this->traits_.max_fan_power[5] = TION_3S_MAX_FAN_POWER5;
   this->traits_.max_fan_power[6] = TION_3S_MAX_FAN_POWER6;
 
+#ifdef TION_ENABLE_PI_CONTROLLER
   this->traits_.auto_prod = PROD;
+#endif
 }
 
 void Tion3sApi::update_state_(const tion_3s::tion3s_state_t &state) {

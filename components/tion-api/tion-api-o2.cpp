@@ -64,7 +64,9 @@ using namespace tion;
 
 static const char *const TAG = "tion-api-uart-o2";
 
+#ifdef TION_ENABLE_PI_CONTROLLER
 static const uint8_t PROD[] = {0, TION_O2_AUTO_PROD};
+#endif
 
 constexpr size_t ERRORS_COUNT = tiono2_state_t::ERROR_MAX_BIT - tiono2_state_t::ERROR_MIN_BIT + 1;
 static const char *const ERRORS[ERRORS_COUNT] = {
@@ -326,7 +328,9 @@ TionO2Api::TionO2Api() : TionApiBase() {
   this->traits_.max_fan_power[3] = TION_O2_MAX_FAN_POWER3;
   this->traits_.max_fan_power[4] = TION_O2_MAX_FAN_POWER4;
 
+#ifdef TION_ENABLE_PI_CONTROLLER
   this->traits_.auto_prod = PROD;
+#endif
 }
 
 void TionO2Api::update_dev_mode_(const DevModeFlags &dev_mode) {

@@ -21,3 +21,5 @@ async def to_code(config):
     if CORE.is_esp8266:
         # FIXME check twice
         cg.add_define("USE_TION_HALF_DUPLEX")
+
+    cg.add_define("USE_TION_3S")

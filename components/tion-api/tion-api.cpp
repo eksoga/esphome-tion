@@ -399,7 +399,11 @@ void TionStateCall::reset() {
   this->auto_state_.reset();
 }
 
-TionApiBase::TionApiBase() : auto_pi_(TION_AUTO_KP, TION_AUTO_TI, TION_AUTO_DB) {
+TionApiBase::TionApiBase()
+#ifdef TION_ENABLE_PI_CONTROLLER
+    : auto_pi_(TION_AUTO_KP, TION_AUTO_TI, TION_AUTO_DB)
+#endif
+{
   this->presets_.push_back({
       nullptr,
       {
@@ -737,6 +741,7 @@ void TionApiBase::add_preset(const char *name, const PresetData &data) {
   }
 }
 
+#ifdef TION_ENABLE_PI_CONTROLLER
 void TionApiBase::set_auto_pi_data(float kp, float ti, int db) {
   if (kp > 0 && ti > 0) {
     this->auto_pi_.reset(kp, ti, db);
@@ -744,6 +749,7 @@ void TionApiBase::set_auto_pi_data(float kp, float ti, int db) {
     TION_LOGW(TAG, "Invalid Kp=%.04f or Ti=%.04f", kp, ti);
   }
 }
+#endif
 
 void TionApiBase::set_auto_min_fan_speed(uint8_t min_fan_speed) {
   if (min_fan_speed > this->traits_.max_fan_speed - 1) {
@@ -779,8 +785,10 @@ void TionApiBase::set_auto_max_fan_speed(uint8_t max_fan_speed) {
 }
 
 void TionApiBase::auto_update_fan_speed_() {
+#ifdef TION_ENABLE_PI_CONTROLLER
   this->auto_pi_.set_min(this->traits_.auto_prod[this->auto_min_fan_speed_]);
   this->auto_pi_.set_max(this->traits_.auto_prod[this->auto_max_fan_speed_]);
+#endif
   this->auto_reset();
 }
 
@@ -801,7 +809,9 @@ void TionApiBase::auto_reset() {
   if (this->auto_update_func_) {
     this->auto_update_func_(0);
   } else {
+#ifdef TION_ENABLE_PI_CONTROLLER
     this->auto_pi_.reset();
+#endif
   }
 }
 
@@ -837,7 +847,9 @@ bool TionApiBase::auto_update(uint16_t current, TionStateCall *call) {
       fan_speed = this->auto_max_fan_speed_;
     }
   } else {
+#ifdef TION_ENABLE_PI_CONTROLLER
     fan_speed = this->auto_pi_update_(current);
+#endif
   }
 
   if (fan_speed == this->state_.get_fan_speed()) {
@@ -854,6 +866,7 @@ bool TionApiBase::auto_update(uint16_t current, TionStateCall *call) {
   return true;
 }
 
+#ifdef TION_ENABLE_PI_CONTROLLER
 uint8_t TionApiBase::auto_pi_update_(uint16_t current) {
   int rate = this->auto_pi_.update(this->auto_setpoint_, current);
   TION_LOGV(TAG, "Auto PI rate: %d", rate);
@@ -878,6 +891,7 @@ uint8_t TionApiBase::auto_pi_update_(uint16_t current) {
   // не нашли подходящего значения, работаем по-минимуму
   return this->auto_min_fan_speed_;
 }
+#endif
 
 bool TionApiBase::auto_is_valid() const {
   return !!this->auto_update_func_ ||

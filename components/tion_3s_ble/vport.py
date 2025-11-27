@@ -26,3 +26,4 @@ async def to_code(config):
     cg.add(var.set_experimental_always_pair(config[CONF_EXPERIMENTAL_ALWAYS_PAIR]))
     vio = await cg.get_variable(config[vport.CONF_VPORT_IO_ID])
     cg.add(vio.set_vport(var))
+    cg.add_define("USE_TION_3S")

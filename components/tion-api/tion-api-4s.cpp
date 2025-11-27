@@ -12,7 +12,9 @@ namespace tion_4s {
 
 static const char *const TAG = "tion-api-4s";
 
+#ifdef TION_ENABLE_PI_CONTROLLER
 static const uint8_t PROD[] = {0, TION_4S_AUTO_PROD};
+#endif
 
 using tion::tion_dev_info_t;
 using tion::TionGatePosition;
@@ -390,7 +392,9 @@ Tion4sApi::Tion4sApi() {
   this->traits_.max_fan_power[5] = TION_4S_MAX_FAN_POWER5;
   this->traits_.max_fan_power[6] = TION_4S_MAX_FAN_POWER6;
 
+#ifdef TION_ENABLE_PI_CONTROLLER
   this->traits_.auto_prod = PROD;
+#endif
 }
 
 void Tion4sApi::enable_native_boost_support() { this->traits_.supports_boost = true; }

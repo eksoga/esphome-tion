@@ -8,10 +8,18 @@
 #include "esphome/core/component.h"
 
 #include "../tion-api/tion-api.h"
+#ifdef USE_TION_O2
 #include "../tion-api/tion-api-o2.h"
+#endif
+#ifdef USE_TION_3S
 #include "../tion-api/tion-api-3s.h"
+#endif
+#ifdef USE_TION_4S
 #include "../tion-api/tion-api-4s.h"
+#endif
+#ifdef USE_TION_LT
 #include "../tion-api/tion-api-lt.h"
+#endif
 #include "tion_vport.h"
 #include "tion_prefs.h"
 
@@ -158,6 +166,7 @@ template<class A> class TionApiComponentBase : public TionApiComponent {
   Api *typed_api() { return reinterpret_cast<Api *>(this->api_); }
 };
 
+#ifdef USE_TION_O2
 class TionO2ApiComponent : public TionApiComponentBase<dentra::tion_o2::TionO2Api> {
  public:
   explicit TionO2ApiComponent(TionApiComponentBase::Api *api, TionVPortType vport_type)
@@ -166,9 +175,13 @@ class TionO2ApiComponent : public TionApiComponentBase<dentra::tion_o2::TionO2Ap
     this->set_timeout(200, [api = this->typed_api()]() { api->update_work_mode(); });
   }
 };
+#endif
 
+#ifdef USE_TION_3S
 using Tion3sApiComponent = TionApiComponentBase<dentra::tion::Tion3sApi>;
+#endif
 
+#ifdef USE_TION_4S
 class Tion4sApiComponent : public TionApiComponentBase<dentra::tion_4s::Tion4sApi> {
  public:
   explicit Tion4sApiComponent(TionApiComponentBase::Api *api, TionVPortType vport_type)
@@ -194,7 +207,9 @@ class Tion4sApiComponent : public TionApiComponentBase<dentra::tion_4s::Tion4sAp
   void reset_timers();
 #endif
 };
+#endif
 
+#ifdef USE_TION_LT
 class TionLtApiComponent : public TionApiComponentBase<dentra::tion::TionLtApi> {
  public:
   explicit TionLtApiComponent(TionApiComponentBase::Api *api, TionVPortType vport_type)
@@ -208,6 +223,7 @@ class TionLtApiComponent : public TionApiComponentBase<dentra::tion::TionLtApi> 
     this->typed_api()->set_button_presets(button_presets);
   }
 };
+#endif
 
 }  // namespace tion
 }  // namespace esphome

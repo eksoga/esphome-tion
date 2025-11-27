@@ -294,6 +294,7 @@ async def _setup_auto(config: dict, var):
             [CONF_AUTO_KP, CONF_AUTO_TI, CONF_AUTO_DB],
             api.set_auto_pi_data,
         )
+        cg.add_build_flag("-DTION_ENABLE_PI_CONTROLLER")
 
     await cgp.setup_lambda(
         config,

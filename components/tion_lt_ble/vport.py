@@ -17,3 +17,4 @@ CONFIG_SCHEMA = vport.vport_ble_schema(TionLtBleVPort, TionLtBleIO)
 
 async def to_code(config):
     await vport.setup_vport_ble(config)
+    cg.add_define("USE_TION_LT")

@@ -21,3 +21,4 @@ async def to_code(config):
 
     cg.add_define("USE_VPORT_HOST")
     cg.add_define("USE_VPORT_UART")
+    cg.add_define("USE_TION_LT")

@@ -85,7 +85,9 @@ using tion_lt::tionlt_state_t;
 using tion_lt::tionlt_state_set_req_t;
 using namespace tion_lt;
 
+#ifdef TION_ENABLE_PI_CONTROLLER
 static const uint8_t PROD[] = {0, TION_LT_AUTO_PROD};
+#endif
 
 uint16_t TionLtApi::get_state_type() const { return FRAME_TYPE_STATE_RSP; }
 
@@ -231,7 +233,9 @@ TionLtApi::TionLtApi() {
   this->traits_.max_fan_power[5] = TION_LT_MAX_FAN_POWER5;
   this->traits_.max_fan_power[6] = TION_LT_MAX_FAN_POWER6;
 
+#ifdef TION_ENABLE_PI_CONTROLLER
   this->traits_.auto_prod = PROD;
+#endif
 }
 
 void TionLtApi::update_dev_info_(const tion::tion_dev_info_t &dev_info) {

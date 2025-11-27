@@ -13,3 +13,4 @@ CONFIG_SCHEMA = vport.vport_uart_schema(TionLtUartVPort, TionLtUartIO)
 
 async def to_code(config):
     await vport.setup_vport_uart(config)
+    cg.add_define("USE_TION_LT")

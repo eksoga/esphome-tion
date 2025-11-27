@@ -27,3 +27,4 @@ async def to_code(config):
     cg.add_build_flag("-DTION_ENABLE_HEARTBEAT")
     # enable ota subscription
     cg.add_define("USE_OTA_STATE_CALLBACK")
+    cg.add_define("USE_TION_4S")

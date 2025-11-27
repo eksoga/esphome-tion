@@ -7,7 +7,10 @@
 
 #include "tion-api-defines.h"
 #include "utils.h"
+
+#ifdef TION_ENABLE_PI_CONTROLLER
 #include "pi_controller.h"
+#endif
 
 namespace dentra {
 namespace tion {
@@ -63,8 +66,10 @@ struct TionTraits {
   uint16_t get_max_heater_power() const { return TION__HEAT_CONST_TO_POWER(this->max_heater_power); }
   float get_max_fan_power(size_t fan_speed) const { return TION__FAN_CONST_TO_POWER(this->max_fan_power[fan_speed]); }
 
+#ifdef TION_ENABLE_PI_CONTROLLER
   /// Массив производительностей бризера для каждой скорости, включая 0.
   const uint8_t *auto_prod;
+#endif
 };
 
 enum class TionGatePosition : uint8_t {
@@ -311,7 +316,9 @@ class TionApiBase {
   /// @return true если были изменения и требуются выполнить perform
   bool auto_update(uint16_t current, TionStateCall *call);
   void auto_reset();
+#ifdef TION_ENABLE_PI_CONTROLLER
   void set_auto_pi_data(float kp, float ti, int db);
+#endif
   void set_auto_setpoint(uint16_t setpoint);
   void set_auto_min_fan_speed(uint8_t min_fan_speed);
   void set_auto_max_fan_speed(uint8_t max_fan_speed);
@@ -343,7 +350,9 @@ class TionApiBase {
   std::vector<NamedPreset> presets_;
   NamedPreset *active_preset_{}, *activate_preset_{};
 
+#ifdef TION_ENABLE_PI_CONTROLLER
   auto_co2::PIController auto_pi_;
+#endif
   int16_t auto_setpoint_{};
   uint8_t auto_min_fan_speed_{};
   uint8_t auto_max_fan_speed_{};
@@ -362,7 +371,9 @@ class TionApiBase {
   void boost_save_state_();
 
   void auto_update_fan_speed_();
+#ifdef TION_ENABLE_PI_CONTROLLER
   uint8_t auto_pi_update_(uint16_t current);
+#endif
 
   NamedPreset &boost_preset_() { return this->presets_[0]; }
   const NamedPreset &boost_preset_() const { return this->presets_[0]; }
