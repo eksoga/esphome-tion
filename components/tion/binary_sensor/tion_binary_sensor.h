@@ -44,8 +44,10 @@ class TionBinarySensor : public binary_sensor::BinarySensor, public Component, p
         this->set_has_state(false);
 #if ESPHOME_VERSION_CODE < VERSION_CODE(2025, 7, 0)
         this->state_callback_.call(false);
-#else
+#elif ESPHOME_VERSION_CODE < VERSION_CODE(2025, 11, 5)
         this->set_state_({});
+#else
+        this->set_new_state({});
 #endif
       }
     });
