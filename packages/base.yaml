@@ -1,10 +1,10 @@
 substitutions:
   # project version
-  project_version: "next"
+  project_version: "main"
   # project branch
   project_branch: $project_version
   # project git source
-  project_source: github://dentra/esphome-tion@$project_branch
+  project_source: github://eksoga/esphome-tion@$project_branch
   # project source refresh interval
   project_source_refresh: 12h
   # project identifier
